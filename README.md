@@ -46,32 +46,29 @@
 ### 🛠 Stack Tecnológica  
 | Área          | Tecnologias                                                                 |
 |---------------|-----------------------------------------------------------------------------|
-| **Frontend**  | React.js + TypeScript, Tailwind CSS, Framer Motion (animações)             |
-| **Backend**   | Node.js (Express), PostgreSQL (Prisma ORM), Firebase Authentication        |
-| **Cloud**     | AWS S3 (armazenamento), Google Drive API (álbum de fotos)                  |
-| **Bibliotecas**| `react-qrcode`, `react-vertical-timeline`, `react-hook-form`, `Chart.js`   |
-| **DevOps**    | Docker, GitHub Actions (CI/CD), Vercel (deploy)                            |
+| **Frontend**  | React.js + TypeScript, Tailwind CSS, Framer Motion                         |
+| **Backend**   | **FastAPI**, PostgreSQL, Celery (para tarefas assíncronas) |
+| **Autenticação** | JWT (FastAPI)                                      |
+| **Cloud**     | AWS S3, Google Drive API                                                   |
+| **Bibliotecas Python** | `Pillow` (imagens), `qrcode`, `celery`, `pydantic` (FastAPI), |
+| **DevOps**    | Docker, GitHub Actions, Nginx                                              |
 
 ---
 
-### ⚙️ Como Executar Localmente  
+### ⚙️ Como Executar Localmente
+
 ```bash
-# 1. Clonar repositório
-git clone https://github.com/seu-usuario/weddingplanner.git
+# Backend
+cd backend/fastapi
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload
 
-# 2. Configurar variáveis de ambiente (backend)
-cp .env.example .env
-# Preencher credenciais do banco e APIs
-
-# 3. Iniciar containers
-docker-compose up -d
-
-# 4. Instalar dependências (frontend)
-cd frontend && npm install
-
-# 5. Executar
-npm run dev  # Frontend (localhost:3000)
-npm run start # Backend (localhost:5000)
+# Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
 ---
@@ -80,11 +77,18 @@ npm run start # Backend (localhost:5000)
 ```markdown
 weddingplanner/
 ├── backend/
-│   ├── src/
-│   │   ├── controllers/  # Lógica de endpoints
-│   │   ├── models/       # Schemas do banco
-│   │   ├── routes/       # Definição de rotas
-│   │   └── utils/        # Helpers (geração QR Code, etc.)
+│   └── fastapi/
+│       ├── app/
+│       │   ├── core/          # Configurações
+│       │   ├── auth/          # Autenticação JWT
+│       │   ├── models/        # Modelos Pydantic
+│       │   ├── crud/          # Operações DB
+│       │   ├── routes/        # Endpoints
+│       │   │   ├── wedding.py # Rotas dos noivos
+│       │   │   ├── guests.py  # Rotas convidados
+│       │   │   └── ...
+│       ├── migrations/        # Alembic migrations
+│       └── main.py            # Ponto de entrada
 │
 ├── frontend/
 │   ├── public/
@@ -110,11 +114,42 @@ weddingplanner/
 
 ---
 
+#### **Recursos Comuns**:
+- Geração de QR Codes com `qrcode`
+- Upload seguro de imagens com verificação
+- Integração PIX via endpoints dedicados
+- Sincronização com Google Drive API
+
+---
+
+### 🔐 Segurança
+- Validação rigorosa de dados com Pydantic (FastAPI)
+- Rate limiting para endpoints públicos
+- Criptografia de dados sensíveis
+- Tokens JWT com expiração curta
+
+---
+
+### 🌐 Integrações
+```mermaid
+graph LR
+    A[Backend Python] -->|Webhooks| B(Google Drive)
+    A -->|API| C(Pagamentos PIX)
+    A -->|SMTP| D(Email Confirmações)
+    A -->|S3 API| E[AWS S3 Fotos]
+```
+
+---
+
+### ✅ Pré-requisitos
+- Python 3.10+
+- PostgreSQL 14+
+- Node.js 18+ (frontend)
+
+---
+
 ### 📄 Licença  
-MIT License - Livre para uso e modificação. Atribuição opcional.  
+Sem licença  
 
-**Nota**: Projeto voltado para fins educacionais e portfólio. Para uso comercial, recomenda-se validação jurídica de fluxos financeiros.  
-
---- 
 
 > ✨ "Transformando momentos especiais em experiências digitais inesquecíveis"
