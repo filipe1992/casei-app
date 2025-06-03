@@ -1,5 +1,7 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 import base64
 
 from app.models.gift_shop import GiftShop, GiftProduct
@@ -7,102 +9,129 @@ from app.schemas.gift_shop import GiftShopCreate, GiftShopUpdate, GiftProductCre
 
 # Operações da Loja
 
-def get_gift_shop(db: Session, user_id: int) -> Optional[GiftShop]:
-    """Retorna a loja de presentes do usuário."""
-    return db.query(GiftShop).filter(GiftShop.user_id == user_id).first()
+async def get_gift_shop(db: AsyncSession, shop_id: int) -> Optional[GiftShop]:
+    result = await db.execute(select(GiftShop).where(GiftShop.id == shop_id))
+    return result.scalar_one_or_none()
 
-def create_gift_shop(db: Session, shop_in: GiftShopCreate, user_id: int) -> GiftShop:
-    """Cria uma nova loja de presentes."""
+async def get_user_gift_shop(db: AsyncSession, user_id: int) -> Optional[GiftShop]:
+    stmt = (
+        select(GiftShop)
+        .options(selectinload(GiftShop.products))
+        .where(GiftShop.user_id == user_id)
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
+async def create_gift_shop(
+    db: AsyncSession,
+    shop_in: GiftShopCreate,
+    user_id: int
+) -> GiftShop:
     db_shop = GiftShop(
         **shop_in.model_dump(),
         user_id=user_id
     )
     db.add(db_shop)
-    db.commit()
-    db.refresh(db_shop)
+    await db.commit()
+    await db.refresh(db_shop)
     return db_shop
 
-def update_gift_shop(
-    db: Session,
+async def update_gift_shop(
+    db: AsyncSession,
     shop: GiftShop,
     shop_in: GiftShopUpdate
 ) -> GiftShop:
-    """Atualiza uma loja de presentes existente."""
     update_data = shop_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(shop, field, value)
     
     db.add(shop)
-    db.commit()
-    db.refresh(shop)
+    await db.commit()
+    await db.refresh(shop)
     return shop
 
-def delete_gift_shop(db: Session, user_id: int) -> Optional[GiftShop]:
-    """Deleta a loja de presentes do usuário."""
-    shop = get_gift_shop(db=db, user_id=user_id)
+async def delete_gift_shop(
+    db: AsyncSession,
+    shop_id: int,
+    user_id: int
+) -> Optional[GiftShop]:
+    result = await db.execute(
+        select(GiftShop).where(
+            GiftShop.id == shop_id,
+            GiftShop.user_id == user_id
+        )
+    )
+    shop = result.scalar_one_or_none()
+    
     if shop:
-        db.delete(shop)
-        db.commit()
-        return shop
-    return None
+        await db.delete(shop)
+        await db.commit()
+    
+    return shop
 
 # Operações de Produtos
 
-def get_gift_product(db: Session, product_id: int) -> Optional[GiftProduct]:
-    """Retorna um produto específico."""
-    return db.query(GiftProduct).filter(GiftProduct.id == product_id).first()
+async def get_gift_product(db: AsyncSession, product_id: int) -> Optional[GiftProduct]:
+    result = await db.execute(select(GiftProduct).where(GiftProduct.id == product_id))
+    return result.scalar_one_or_none()
 
-def get_gift_products(db: Session, shop_id: int) -> List[GiftProduct]:
-    """Retorna todos os produtos de uma loja."""
-    return db.query(GiftProduct).filter(GiftProduct.shop_id == shop_id).all()
+async def get_shop_products(
+    db: AsyncSession,
+    shop_id: int,
+    skip: int = 0,
+    limit: int = 100
+) -> List[GiftProduct]:
+    result = await db.execute(
+        select(GiftProduct)
+        .where(GiftProduct.shop_id == shop_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
 
-def create_gift_product(
-    db: Session,
-    product_in: GiftProductCreate,
+async def create_gift_product(
+    db: AsyncSession,
+    item_in: GiftProductCreate,
     shop_id: int
 ) -> GiftProduct:
-    """Cria um novo produto na loja."""
-    # Converte a imagem de base64 para bytes
-    image_bytes = base64.b64decode(product_in.image)
-    
-    # Remove o campo image do dict e adiciona separadamente
-    product_data = product_in.model_dump(exclude={'image'})
-    db_product = GiftProduct(
-        **product_data,
-        image=image_bytes,
+    db_item = GiftProduct(
+        **item_in.model_dump(),
         shop_id=shop_id
     )
-    
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
-    return db_product
+    db.add(db_item)
+    await db.commit()
+    await db.refresh(db_item)
+    return db_item
 
-def update_gift_product(
-    db: Session,
-    product: GiftProduct,
-    product_in: GiftProductUpdate
+async def update_gift_product(
+    db: AsyncSession,
+    item: GiftProduct,
+    item_in: GiftProductUpdate
 ) -> GiftProduct:
-    """Atualiza um produto existente."""
-    update_data = product_in.model_dump(exclude_unset=True)
-    
-    # Se houver uma nova imagem, converte de base64 para bytes
-    if 'image' in update_data:
-        update_data['image'] = base64.b64decode(update_data['image'])
-    
+    update_data = item_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
-        setattr(product, field, value)
+        setattr(item, field, value)
     
-    db.add(product)
-    db.commit()
-    db.refresh(product)
-    return product
+    db.add(item)
+    await db.commit()
+    await db.refresh(item)
+    return item
 
-def delete_gift_product(db: Session, product_id: int) -> Optional[GiftProduct]:
-    """Deleta um produto específico."""
-    product = get_gift_product(db=db, product_id=product_id)
-    if product:
-        db.delete(product)
-        db.commit()
-        return product
-    return None 
+async def delete_gift_product(
+    db: AsyncSession,
+    item_id: int,
+    shop_id: int
+) -> Optional[GiftProduct]:
+    result = await db.execute(
+        select(GiftProduct).where(
+            GiftProduct.id == item_id,
+            GiftProduct.shop_id == shop_id
+        )
+    )
+    item = result.scalar_one_or_none()
+    
+    if item:
+        await db.delete(item)
+        await db.commit()
+    
+    return item

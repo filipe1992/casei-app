@@ -1,0 +1,1499 @@
+{
+	"info": {
+		"_postman_id": "unique-id",
+		"name": "Casei App",
+		"description": "Coleção de testes para o Casei App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login/access-token",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login", "access-token"]
+						}
+					}
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"User Example\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me"]
+						}
+					}
+				},
+				{
+					"name": "Test Superuser",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/test-superuser",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "test-superuser"]
+						}
+					}
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/users/:username/deactivate",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", ":username", "deactivate"],
+							"variable": [
+								{
+									"key": "username",
+									"value": "user@example.com"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["users"],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"New User\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": ["{{base_url}}"],
+							"path": ["users"]
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/me",
+							"host": ["{{base_url}}"],
+							"path": ["users", "me"]
+						}
+					}
+				},
+				{
+					"name": "Update Current User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"Updated Name\",\n    \"password\": \"newpassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/me",
+							"host": ["{{base_url}}"],
+							"path": ["users", "me"]
+						}
+					}
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["users", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"Updated User Name\",\n    \"password\": \"newpassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["users", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["users", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Guests",
+			"item": [
+				{
+					"name": "Create Guest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Guest Name\",\n    \"email\": \"guest@example.com\",\n    \"phone\": \"+5511999999999\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/guests/",
+							"host": ["{{base_url}}"],
+							"path": ["guests"]
+						}
+					}
+				},
+				{
+					"name": "List User Guests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/guests/me?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["guests", "me"],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Guest by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/guests/:guest_id",
+							"host": ["{{base_url}}"],
+							"path": ["guests", ":guest_id"],
+							"variable": [
+								{
+									"key": "guest_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Guest",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Guest Name\",\n    \"email\": \"updated@example.com\",\n    \"phone\": \"+5511999999999\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/guests/:guest_id",
+							"host": ["{{base_url}}"],
+							"path": ["guests", ":guest_id"],
+							"variable": [
+								{
+									"key": "guest_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Guest",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/guests/:guest_id",
+							"host": ["{{base_url}}"],
+							"path": ["guests", ":guest_id"],
+							"variable": [
+								{
+									"key": "guest_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Confirm Guest Presence",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/guests/confirm/:hash_link",
+							"host": ["{{base_url}}"],
+							"path": ["guests", "confirm", ":hash_link"],
+							"variable": [
+								{
+									"key": "hash_link",
+									"value": "guest-hash-link"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Schedule",
+			"item": [
+				{
+					"name": "Create Schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Cronograma do Casamento\",\n    \"items\": [\n        {\n            \"title\": \"Cerimônia\",\n            \"description\": \"Início da cerimônia\",\n            \"time\": \"2024-12-31T16:00:00\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/schedule/",
+							"host": ["{{base_url}}"],
+							"path": ["schedule"]
+						}
+					}
+				},
+				{
+					"name": "Get Schedule",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/schedule/",
+							"host": ["{{base_url}}"],
+							"path": ["schedule"]
+						}
+					}
+				},
+				{
+					"name": "Update Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Novo Título do Cronograma\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/schedule/",
+							"host": ["{{base_url}}"],
+							"path": ["schedule"]
+						}
+					}
+				},
+				{
+					"name": "Delete Schedule",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/schedule/",
+							"host": ["{{base_url}}"],
+							"path": ["schedule"]
+						}
+					}
+				},
+				{
+					"name": "Create Schedule Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Novo Item\",\n    \"description\": \"Descrição do novo item\",\n    \"time\": \"2024-12-31T17:00:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/schedule/items",
+							"host": ["{{base_url}}"],
+							"path": ["schedule", "items"]
+						}
+					}
+				},
+				{
+					"name": "Update Schedule Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Item Atualizado\",\n    \"description\": \"Descrição atualizada\",\n    \"time\": \"2024-12-31T18:00:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/schedule/items/:item_id",
+							"host": ["{{base_url}}"],
+							"path": ["schedule", "items", ":item_id"],
+							"variable": [
+								{
+									"key": "item_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Schedule Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/schedule/items/:item_id",
+							"host": ["{{base_url}}"],
+							"path": ["schedule", "items", ":item_id"],
+							"variable": [
+								{
+									"key": "item_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Photos",
+			"item": [
+				{
+					"name": "Upload Photo (Guest)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/photos/upload/:guest_hash",
+							"host": ["{{base_url}}"],
+							"path": ["photos", "upload", ":guest_hash"],
+							"variable": [
+								{
+									"key": "guest_hash",
+									"value": "guest-hash-value"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Guest Photos by Hash",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/photos/guest/:guest_hash?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["photos", "guest", ":guest_hash"],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							],
+							"variable": [
+								{
+									"key": "guest_hash",
+									"value": "guest-hash-value"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Photos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photos/user?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["photos", "user"],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Guest Photos by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photos/user/guest/:guest_id?skip=0&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["photos", "user", "guest", ":guest_id"],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							],
+							"variable": [
+								{
+									"key": "guest_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Photo",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photos/:photo_id",
+							"host": ["{{base_url}}"],
+							"path": ["photos", ":photo_id"],
+							"variable": [
+								{
+									"key": "photo_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Photo Challenge",
+			"item": [
+				{
+					"name": "Create Challenge",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Desafio dos Noivos\",\n    \"description\": \"Tire fotos com os noivos\",\n    \"tasks\": [\n        {\n            \"title\": \"Foto com os noivos\",\n            \"description\": \"Tire uma foto com os noivos\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge"]
+						}
+					}
+				},
+				{
+					"name": "List Challenges",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge"]
+						}
+					}
+				},
+				{
+					"name": "Get Challenge",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/:challenge_id",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge", ":challenge_id"],
+							"variable": [
+								{
+									"key": "challenge_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Challenge",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Desafio Atualizado\",\n    \"description\": \"Nova descrição do desafio\",\n    \"tasks\": [\n        {\n            \"title\": \"Nova Tarefa\",\n            \"description\": \"Descrição da nova tarefa\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/:challenge_id",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge", ":challenge_id"],
+							"variable": [
+								{
+									"key": "challenge_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Challenge",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/:challenge_id",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge", ":challenge_id"],
+							"variable": [
+								{
+									"key": "challenge_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Complete Challenge Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"photo_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/:challenge_id/tasks/:task_id/complete",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge", ":challenge_id", "tasks", ":task_id", "complete"],
+							"variable": [
+								{
+									"key": "challenge_id",
+									"value": "1"
+								},
+								{
+									"key": "task_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Challenge Progress",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/:challenge_id/progress",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge", ":challenge_id", "progress"],
+							"variable": [
+								{
+									"key": "challenge_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Guest Challenges",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/photo-challenge/guest/:guest_hash",
+							"host": ["{{base_url}}"],
+							"path": ["photo-challenge", "guest", ":guest_hash"],
+							"variable": [
+								{
+									"key": "guest_hash",
+									"value": "guest-hash-value"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Timeline",
+			"item": [
+				{
+					"name": "Create Timeline",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Nossa História\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/timeline/",
+							"host": ["{{base_url}}"],
+							"path": ["timeline"]
+						}
+					}
+				},
+				{
+					"name": "Get My Timeline",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeline/me",
+							"host": ["{{base_url}}"],
+							"path": ["timeline", "me"]
+						}
+					}
+				},
+				{
+					"name": "Update My Timeline",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Novo Título da Timeline\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/timeline/me",
+							"host": ["{{base_url}}"],
+							"path": ["timeline", "me"]
+						}
+					}
+				},
+				{
+					"name": "Delete My Timeline",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeline/me",
+							"host": ["{{base_url}}"],
+							"path": ["timeline", "me"]
+						}
+					}
+				},
+				{
+					"name": "Create Timeline Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Primeiro Encontro\",\n    \"date\": \"2020-01-01\",\n    \"text\": \"Nosso primeiro encontro foi muito especial\",\n    \"image_url\": \"https://example.com/image.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/timeline/me/items",
+							"host": ["{{base_url}}"],
+							"path": ["timeline", "me", "items"]
+						}
+					}
+				},
+				{
+					"name": "Update Timeline Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Item Atualizado\",\n    \"text\": \"Texto atualizado do item\",\n    \"video_url\": \"https://youtube.com/watch?v=xyz\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/timeline/me/items/:item_id",
+							"host": ["{{base_url}}"],
+							"path": ["timeline", "me", "items", ":item_id"],
+							"variable": [
+								{
+									"key": "item_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Timeline Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeline/me/items/:item_id",
+							"host": ["{{base_url}}"],
+							"path": ["timeline", "me", "items", ":item_id"],
+							"variable": [
+								{
+									"key": "item_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Invitations",
+			"item": [
+				{
+					"name": "Create Invitation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Nosso Casamento\",\n    \"date\": \"2024-12-31\",\n    \"location\": \"Local do Evento\",\n    \"description\": \"Descrição do evento\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invitations/",
+							"host": ["{{base_url}}"],
+							"path": ["invitations"]
+						}
+					}
+				},
+				{
+					"name": "Get My Invitation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/invitations/me",
+							"host": ["{{base_url}}"],
+							"path": ["invitations", "me"]
+						}
+					}
+				},
+				{
+					"name": "Update My Invitation",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Título Atualizado\",\n    \"date\": \"2024-12-31\",\n    \"location\": \"Novo Local\",\n    \"description\": \"Nova descrição\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invitations/me",
+							"host": ["{{base_url}}"],
+							"path": ["invitations", "me"]
+						}
+					}
+				},
+				{
+					"name": "Delete My Invitation",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/invitations/me",
+							"host": ["{{base_url}}"],
+							"path": ["invitations", "me"]
+						}
+					}
+				},
+				{
+					"name": "Get Guest Invitation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/invitations/guest/:hash_link",
+							"host": ["{{base_url}}"],
+							"path": ["invitations", "guest", ":hash_link"],
+							"variable": [
+								{
+									"key": "hash_link",
+									"value": "guest-hash-value"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Gift Shop",
+			"item": [
+				{
+					"name": "Create Gift Shop",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nossa Lista de Presentes\",\n    \"pix_key\": \"12345678900\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gift-shop/",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop"]
+						}
+					}
+				},
+				{
+					"name": "Get My Gift Shop",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me"]
+						}
+					}
+				},
+				{
+					"name": "Update My Gift Shop",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nova Lista de Presentes\",\n    \"pix_key\": \"98765432100\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me"]
+						}
+					}
+				},
+				{
+					"name": "Delete My Gift Shop",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me"]
+						}
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Produto Exemplo\",\n    \"description\": \"Descrição do produto\",\n    \"price\": 199.99,\n    \"image\": \"base64_encoded_image\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me/products",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me", "products"]
+						}
+					}
+				},
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me/products",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me", "products"]
+						}
+					}
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Produto Atualizado\",\n    \"description\": \"Nova descrição\",\n    \"price\": 299.99,\n    \"image\": \"base64_encoded_image\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me/products/:product_id",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me", "products", ":product_id"],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/me/products/:product_id",
+							"host": ["{{base_url}}"],
+							"path": ["gift-shop", "me", "products", ":product_id"],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+} 

@@ -129,12 +129,13 @@ def create_already_exists_error(
     )
 
 def create_validation_error(
+    error_code: ErrorCode,
     message: str,
     validation_errors: Dict[str, Any]
 ) -> BusinessError:
     """Cria um erro padronizado para falhas de validação"""
     return BusinessError(
-        error_code=ErrorCode.INVALID_CONTENT,
+        error_code=error_code,
         message=message,
         details={"validation_errors": validation_errors}
     )

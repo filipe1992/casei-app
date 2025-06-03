@@ -1,24 +1,26 @@
 from typing import Tuple, List
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.models.guest import Guest
 
-def get_guests_by_confirmation(db: Session, user_id: int) -> Tuple[List[Guest], List[Guest]]:
+async def get_guests_by_confirmation(db: AsyncSession, user_id: int) -> Tuple[List[Guest], List[Guest]]:
     """
     Retorna duas listas: convidados confirmados e pendentes.
     """
     # Busca convidados confirmados
-    confirmed = db.query(Guest).filter(
+    confirmed = await db.execute(select(Guest).filter(
         Guest.user_id == user_id,
         Guest.confirmed == True  # noqa: E712
-    ).order_by(Guest.name).all()
+    ).order_by(Guest.name))
+    confirmed = confirmed.scalars().all()
     
     # Busca convidados pendentes
-    pending = db.query(Guest).filter(
+    pending = await db.execute(select(Guest).filter(
         Guest.user_id == user_id,
         Guest.confirmed == False  # noqa: E712
-    ).order_by(Guest.name).all()
+    ).order_by(Guest.name))
+    pending = pending.scalars().all()
 
     confirmed_count = len(confirmed)
     pending_count = len(pending)

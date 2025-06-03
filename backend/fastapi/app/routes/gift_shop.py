@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
-from app.crud import gift_shop as gift_shop_crud
+from app.crud.gift_shop import get_user_gift_shop, create_gift_shop, update_gift_shop, delete_gift_shop, get_shop_products, get_gift_product, create_gift_product, update_gift_product, delete_gift_product
 from app.schemas.gift_shop import (
     GiftShop,
     GiftShopCreate,
@@ -16,11 +16,11 @@ from app.models.user import User
 from app.db.session import get_db
 from app.auth.auth import get_current_user
 from app.errors.base import (
-    ErrorCode,
     create_not_found_error,
     create_already_exists_error,
     create_validation_error,
-    create_access_denied_error
+    create_access_denied_error,
+    ErrorCode
 )
 
 router = APIRouter()
@@ -49,14 +49,14 @@ async def create_gift_shop(
     - Cada usuário só pode ter uma loja
     - É necessário fornecer um nome e uma chave PIX
     """
-    existing_shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    existing_shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if existing_shop:
         raise create_already_exists_error(
             resource_type="Loja de Presentes",
             identifier=current_user.id
         )
     
-    shop = gift_shop_crud.create_gift_shop(
+    shop = await create_gift_shop(
         db=db,
         shop_in=shop_in,
         user_id=current_user.id
@@ -79,7 +79,7 @@ async def read_gift_shop(
     """
     Recuperar a loja de presentes do usuário atual.
     """
-    shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
@@ -104,14 +104,14 @@ async def update_gift_shop(
     """
     Atualizar a loja de presentes do usuário atual.
     """
-    shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    shop = gift_shop_crud.update_gift_shop(
+    shop = await update_gift_shop(
         db=db,
         shop=shop,
         shop_in=shop_in
@@ -136,7 +136,7 @@ async def delete_gift_shop(
     
     - A operação também remove todos os produtos associados
     """
-    shop = gift_shop_crud.delete_gift_shop(db=db, user_id=current_user.id)
+    shop = await delete_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
@@ -170,7 +170,7 @@ async def create_gift_product(
     - Preço é obrigatório e deve ser positivo
     - Imagem é obrigatória e deve estar em formato base64
     """
-    shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
@@ -178,7 +178,7 @@ async def create_gift_product(
         )
     
     try:
-        product = gift_shop_crud.create_gift_product(
+        product = await create_gift_product(
             db=db,
             product_in=product_in,
             shop_id=shop.id
@@ -186,6 +186,7 @@ async def create_gift_product(
         return product
     except ValidationError as e:
         raise create_validation_error(
+            error_code=ErrorCode.INVALID_CONTENT,
             message="Erro de validação dos dados do produto",
             validation_errors=e.errors()
         )
@@ -206,14 +207,14 @@ async def read_gift_products(
     """
     Listar todos os produtos da loja do usuário atual.
     """
-    shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    return gift_shop_crud.get_gift_products(db=db, shop_id=shop.id)
+    return await get_shop_products(db=db, shop_id=shop.id)
 
 @router.put(
     "/me/products/{product_id}",
@@ -237,14 +238,14 @@ async def update_gift_product(
     - Todos os campos são opcionais na atualização
     - Se fornecida, a imagem deve estar em formato base64
     """
-    shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    product = gift_shop_crud.get_gift_product(db=db, product_id=product_id)
+    product = await get_gift_product(db=db, product_id=product_id)
     if not product:
         raise create_not_found_error(
             resource_type="Produto",
@@ -258,7 +259,7 @@ async def update_gift_product(
         )
     
     try:
-        product = gift_shop_crud.update_gift_product(
+        product = await update_gift_product(
             db=db,
             product=product,
             product_in=product_in
@@ -266,6 +267,7 @@ async def update_gift_product(
         return product
     except ValidationError as e:
         raise create_validation_error(
+            error_code=ErrorCode.INVALID_CONTENT,
             message="Erro de validação dos dados do produto",
             validation_errors=e.errors()
         )
@@ -287,14 +289,14 @@ async def delete_gift_product(
     """
     Deletar um produto específico da loja do usuário atual.
     """
-    shop = gift_shop_crud.get_gift_shop(db=db, user_id=current_user.id)
+    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    product = gift_shop_crud.get_gift_product(db=db, product_id=product_id)
+    product = await get_gift_product(db=db, product_id=product_id)
     if not product:
         raise create_not_found_error(
             resource_type="Produto",
@@ -307,5 +309,5 @@ async def delete_gift_product(
             resource_id=product_id
         )
     
-    product = gift_shop_crud.delete_gift_product(db=db, product_id=product_id)
+    product = await delete_gift_product(db=db, product_id=product_id)
     return product 

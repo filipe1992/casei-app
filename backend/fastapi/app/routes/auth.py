@@ -10,7 +10,7 @@ from app.auth.auth import (
     get_current_active_superuser
 )
 from app.core.config import settings
-from app.crud.user import authenticate_user, create_user, get_user_by_email, deactivate_user
+from app.crud import user as user_crud
 from app.db.session import get_db
 from app.schemas.user import User, UserCreate
 
@@ -24,7 +24,7 @@ async def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = await user_crud.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -54,13 +54,13 @@ async def register_user(
     """
     Create new user.
     """
-    user = get_user_by_email(db, email=user_in.email)
+    user = await user_crud.get_user_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=400,
             detail="Um usuário com este email já existe no sistema.",
         )
-    user = create_user(db, user_in)
+    user = await user_crud.create_user(db, user_in)
     return user
 
 @router.get("/me", response_model=User)
@@ -92,7 +92,7 @@ async def deactivate_user_route(
     Somente superusuários podem executar esta ação.
     Não é possível desativar superusuários.
     """
-    user = deactivate_user(db=db, username=username)
+    user = await user_crud.deactivate_user(db=db, username=username)
     if not user:
         raise HTTPException(
             status_code=404,

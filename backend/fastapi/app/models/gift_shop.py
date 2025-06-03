@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, LargeBinary
+from sqlalchemy import Column, Integer, String, Text, Float, ForeignKey, Boolean, Numeric, LargeBinary
 from sqlalchemy.orm import relationship
-from app.models.user import Base
+from app.db.base_class import Base
 
 class GiftShop(Base):
     __tablename__ = "gift_shops"

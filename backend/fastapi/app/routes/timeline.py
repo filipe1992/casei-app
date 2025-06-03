@@ -49,14 +49,14 @@ async def create_timeline(
     - O título é opcional, tendo um valor padrão
     """
     try:
-        existing_timeline = timeline_crud.get_timeline(db=db, user_id=current_user.id)
+        existing_timeline = await timeline_crud.get_user_timeline(db=db, user_id=current_user.id)
         if existing_timeline:
             raise create_already_exists_error(
                 resource_type="Timeline",
                 identifier=current_user.id
             )
         
-        timeline = timeline_crud.create_timeline(
+        timeline = await timeline_crud.create_timeline(
             db=db,
             timeline_in=timeline_in,
             user_id=current_user.id
@@ -64,6 +64,7 @@ async def create_timeline(
         return timeline
     except ValueError as e:
         raise create_validation_error(
+            error_code=ErrorCode.INVALID_CONTENT,
             message="Erro de validação dos dados da timeline",
             validation_errors=e.errors()
         )
@@ -79,25 +80,19 @@ async def create_timeline(
     }
 )
 async def read_timeline(
-    order_by_date: bool = False,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
     Recuperar a timeline do usuário atual.
     
-    Parâmetros:
-    - **order_by_date**: Se True, retorna os itens ordenados por data (mais recente primeiro).
-                        Se False, mantém a ordem padrão do banco.
-    
     Retorna:
     - Timeline com seus itens, ordenados conforme solicitado
     - 404 se a timeline não existir
     """
-    timeline = timeline_crud.get_timeline(
+    timeline = await timeline_crud.get_user_timeline(
         db=db, 
         user_id=current_user.id,
-        order_by_date=order_by_date
     )
     
     if not timeline:
@@ -129,14 +124,14 @@ async def update_timeline(
     - Permite atualizar apenas o título da timeline
     """
     try:
-        timeline = timeline_crud.get_timeline(db=db, user_id=current_user.id)
+        timeline = await timeline_crud.get_user_timeline(db=db, user_id=current_user.id)
         if not timeline:
             raise create_not_found_error(
                 resource_type="Timeline",
                 resource_id=current_user.id
             )
         
-        timeline = timeline_crud.update_timeline(
+        timeline = await timeline_crud.update_timeline(
             db=db,
             timeline=timeline,
             timeline_in=timeline_in
@@ -144,6 +139,7 @@ async def update_timeline(
         return timeline
     except ValidationError as e:
         raise create_validation_error(
+            error_code=ErrorCode.INVALID_CONTENT,
             message="Erro de validação dos dados da timeline",
             validation_errors=e.errors()
         )
@@ -166,7 +162,7 @@ async def delete_timeline(
     
     - A operação também remove todos os itens associados
     """
-    timeline = timeline_crud.delete_timeline(db=db, user_id=current_user.id)
+    timeline = await timeline_crud.delete_timeline(db=db, user_id=current_user.id)
     if not timeline:
         raise create_not_found_error(
             resource_type="Timeline",
@@ -204,14 +200,14 @@ async def create_timeline_item(
     - URLs de imagem devem ser http/https
     """
     try:
-        timeline = timeline_crud.get_timeline(db=db, user_id=current_user.id)
+        timeline = await timeline_crud.get_user_timeline(db=db, user_id=current_user.id)
         if not timeline:
             raise create_not_found_error(   
                 resource_type="Timeline",
                 resource_id=current_user.id
             )
         
-        item = timeline_crud.create_timeline_item(
+        item = await timeline_crud.create_timeline_item(
             db=db,
             item_in=item_in,
             timeline_id=timeline.id
@@ -219,6 +215,7 @@ async def create_timeline_item(
         return item
     except ValidationError as e:
         raise create_validation_error(
+            error_code=ErrorCode.INVALID_CONTENT,
             message="Erro de validação dos dados do item",
             validation_errors=e.errors()
         )
@@ -249,14 +246,14 @@ async def update_timeline_item(
     - URLs de imagem devem ser http/https
     """
     try:
-        timeline = timeline_crud.get_timeline(db=db, user_id=current_user.id)
+        timeline = await timeline_crud.get_user_timeline(db=db, user_id=current_user.id)
         if not timeline:
             raise create_not_found_error(
                 resource_type="Timeline",
                 resource_id=current_user.id
             )
         
-        item = timeline_crud.get_timeline_item(db=db, item_id=item_id)
+        item = await timeline_crud.get_timeline_item(db=db, item_id=item_id)
         if not item:
             raise create_not_found_error(
                 resource_type="Item da timeline",
@@ -269,7 +266,7 @@ async def update_timeline_item(
                 resource_id=item_id
             )
         
-        item = timeline_crud.update_timeline_item(
+        item = await timeline_crud.update_timeline_item(
             db=db,
             item=item,
             item_in=item_in
@@ -277,6 +274,7 @@ async def update_timeline_item(
         return item
     except ValidationError as e:
         raise create_validation_error(
+            error_code=ErrorCode.INVALID_CONTENT,
             message="Erro de validação dos dados do item",
             validation_errors=e.errors()
         )
@@ -299,14 +297,14 @@ async def delete_timeline_item(
     """
     Deletar um item específico da timeline do usuário atual.
     """
-    timeline = timeline_crud.get_timeline(db=db, user_id=current_user.id)
+    timeline = await timeline_crud.get_user_timeline(db=db, user_id=current_user.id)
     if not timeline:
         raise create_not_found_error(
             resource_type="Timeline",
             resource_id=current_user.id
         )
     
-    item = timeline_crud.get_timeline_item(db=db, item_id=item_id)
+    item = await timeline_crud.get_timeline_item(db=db, item_id=item_id)
     if not item:
         raise create_not_found_error(
             resource_type="Item da timeline",
@@ -319,5 +317,5 @@ async def delete_timeline_item(
             resource_id=item_id
         )
     
-    item = timeline_crud.delete_timeline_item(db=db, item_id=item_id)
+    item = await timeline_crud.delete_timeline_item(db=db, item_id=item_id)
     return item 

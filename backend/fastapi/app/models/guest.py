@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from app.models.user import Base
+from app.db.base_class import Base
 
 class Guest(Base):
     __tablename__ = "guests"
@@ -10,7 +10,14 @@ class Guest(Base):
     phone = Column(String, nullable=True)
     confirmed = Column(Boolean, default=False)
     hash_link = Column(String, unique=True, index=True, nullable=False)
+    whatsapp_invite_id = Column(String, nullable=True)
     
-    # Relacionamento com o usuário
+    # Relacionamento com o usuário (dono do evento)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    user = relationship("User", back_populates="guests") 
+    user = relationship("User", back_populates="guests")
+    
+    # Relacionamento com as fotos
+    photos = relationship("Photo", back_populates="guest", cascade="all, delete-orphan")
+    
+    # Relacionamento com as tasks de desafios
+    completed_challenge_tasks = relationship("CompletedChallengeTask", back_populates="guest", cascade="all, delete-orphan") 

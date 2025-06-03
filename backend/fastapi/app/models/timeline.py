@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from app.models.user import Base
+from app.db.base_class import Base
 
 class Timeline(Base):
     __tablename__ = "timelines"

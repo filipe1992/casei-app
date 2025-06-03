@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -26,13 +27,13 @@ async def create_invitation(
     Criar novo convite.
     Cada usuário só pode ter um convite.
     """
-    existing_invitation = invitation_crud.get_invitation(db=db, user_id=current_user.id)
+    existing_invitation = await invitation_crud.get_invitation(db=db, user_id=current_user.id)
     if existing_invitation:
         raise HTTPException(
             status_code=400,
             detail="Usuário já possui um convite"
         )
-    invitation = invitation_crud.create_invitation(
+    invitation = await invitation_crud.create_invitation(
         db=db, 
         invitation_in=invitation_in, 
         user_id=current_user.id
@@ -47,7 +48,7 @@ async def read_invitation(
     """
     Recuperar o convite do usuário atual.
     """
-    invitation = invitation_crud.get_invitation(db=db, user_id=current_user.id)
+    invitation = await invitation_crud.get_invitation(db=db, user_id=current_user.id)
     if not invitation:
         raise HTTPException(
             status_code=404,
@@ -64,13 +65,13 @@ async def update_invitation(
     """
     Atualizar o convite do usuário atual.
     """
-    invitation = invitation_crud.get_invitation(db=db, user_id=current_user.id)
+    invitation = await invitation_crud.get_invitation(db=db, user_id=current_user.id)
     if not invitation:
         raise HTTPException(
             status_code=404,
             detail="Convite não encontrado"
         )
-    invitation = invitation_crud.update_invitation(
+    invitation = await invitation_crud.update_invitation(
         db=db,
         invitation=invitation,
         invitation_in=invitation_in
@@ -85,7 +86,7 @@ async def delete_invitation(
     """
     Deletar o convite do usuário atual.
     """
-    invitation = invitation_crud.delete_invitation(db=db, user_id=current_user.id)
+    invitation = await invitation_crud.delete_invitation(db=db, user_id=current_user.id)
     if not invitation:
         raise HTTPException(
             status_code=404,
@@ -102,22 +103,36 @@ async def get_guest_invitation(
     Recuperar o convite personalizado para um convidado específico.
     Esta é uma rota pública que não requer autenticação.
     """
-    guest = guest_crud.get_guest_by_hash(db=db, hash_link=hash_link)
-    if not guest:
-        raise HTTPException(
-            status_code=404,
-            detail="Convidado não encontrado"
-        )
-    
-    invitation = invitation_crud.get_invitation(db=db, user_id=guest.user_id)
-    if not invitation:
-        raise HTTPException(
-            status_code=404,
-            detail="Convite não encontrado"
-        )
-    
-    # Retorna o convite com o nome do convidado usando o novo schema
-    return GuestInvitationResponse(
-        guest_name=guest.name,
-        invitation=invitation
-    ) 
+
+    return await invitation_crud.get_guest_invitation(db=db, hash_link=hash_link) 
+
+@router.post("/guest/{hash_link}/send_invitation")
+async def send_invitation(
+    hash_link: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Enviar o convite por WhatsApp para um convidado específico.
+    """
+    try:
+        await invitation_crud.send_invitation_by_whatsapp(db=db, hash_link=hash_link, user=current_user)
+        return {"message": "Convite enviado para o convidado"}
+    except Exception as e:
+        logging.error(f"Erro ao enviar convite para o convidado: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao enviar convite para o convidado: {str(e)}")
+
+@router.post("/send_invitation_all_guests")
+async def send_invitation_all_guests(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Enviar o convite por WhatsApp para todos os convidados.
+    """
+    try:
+        await invitation_crud.send_invitation_by_whatsapp_all_guests(db=db, user=current_user)
+        return {"message": "Convite enviado para todos os convidados"}
+    except Exception as e:
+        logging.error(f"Erro ao enviar convite para todos os convidados: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao enviar convite para todos os convidados: {str(e)}")

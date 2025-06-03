@@ -2,7 +2,7 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.crud import dashboard as dashboard_crud
+from app.crud.dashboard import get_guests_by_confirmation
 from app.schemas.dashboard import DashboardResponse, GuestMetrics
 from app.models.user import User
 from app.db.session import get_db
@@ -32,7 +32,7 @@ async def read_dashboard(
     """
     
     # Obtém as listas de convidados
-    result = dashboard_crud.get_guests_by_confirmation(
+    result = await get_guests_by_confirmation(
         db=db, 
         user_id=current_user.id
     )
