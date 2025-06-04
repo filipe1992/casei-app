@@ -1,55 +1,122 @@
 {
 	"info": {
-		"_postman_id": "unique-id",
+		"_postman_id": "981d0b01-9561-4169-b8c8-e5b630a47297",
 		"name": "Casei App",
 		"description": "Coleção de testes para o Casei App",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30060741"
 	},
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8000/api/v1",
-			"type": "string"
-		},
-		{
-			"key": "token",
-			"value": "",
-			"type": "string"
-		}
-	],
 	"item": [
 		{
 			"name": "Auth",
 			"item": [
 				{
-					"name": "Login",
+					"name": "Login Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('access_token', responseBody.access_token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"username\": \"user@example.com\",\n    \"password\": \"password123\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
 							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password"
+								},
+								{
+									"key": "username",
+									"value": "filipe@example.com"
+								},
+								{
+									"key": "password",
+									"value": "password123"
+								},
+								{
+									"key": "scope",
+									"value": ""
+								},
+								{
+									"key": "client_id",
+									"value": ""
+								},
+								{
+									"key": "client_secret",
+									"value": ""
+								}
+							]
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/login/access-token",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login", "access-token"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login",
+								"access-token"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('user_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"User Example\"\n}",
+							"raw": "{\n    \"email\": \"filipe@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"Filipe Damasceno Coelho\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -58,14 +125,30 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "register"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Current User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -76,14 +159,30 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/auth/me",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Test Superuser",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -94,14 +193,30 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/auth/test-superuser",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "test-superuser"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"test-superuser"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Deactivate User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -112,16 +227,24 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/auth/users/:username/deactivate",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "users", ":username", "deactivate"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"users",
+								":username",
+								"deactivate"
+							],
 							"variable": [
 								{
 									"key": "username",
-									"value": "user@example.com"
+									"value": "teste_user@example.com"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -131,6 +254,16 @@
 				{
 					"name": "List Users",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -140,9 +273,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/users/?skip=0&limit=100",
-							"host": ["{{base_url}}"],
-							"path": ["users"],
+							"raw": "{{base_url}}/users?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							],
 							"query": [
 								{
 									"key": "skip",
@@ -154,11 +291,38 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('user_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -169,7 +333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"New User\"\n}",
+							"raw": "{\n    \"email\": \"teste_user@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"User Example\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -177,15 +341,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/users/",
-							"host": ["{{base_url}}"],
-							"path": ["users"]
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Current User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -196,14 +375,30 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/users/me",
-							"host": ["{{base_url}}"],
-							"path": ["users", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Current User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -223,14 +418,30 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/users/me",
-							"host": ["{{base_url}}"],
-							"path": ["users", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get User by ID",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -241,20 +452,36 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/users/:user_id",
-							"host": ["{{base_url}}"],
-							"path": ["users", ":user_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								":user_id"
+							],
 							"variable": [
 								{
 									"key": "user_id",
-									"value": "1"
+									"value": "{{user_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -274,20 +501,36 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/users/:user_id",
-							"host": ["{{base_url}}"],
-							"path": ["users", ":user_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								":user_id"
+							],
 							"variable": [
 								{
 									"key": "user_id",
-									"value": "1"
+									"value": "{{user_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -298,16 +541,22 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/users/:user_id",
-							"host": ["{{base_url}}"],
-							"path": ["users", ":user_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								":user_id"
+							],
 							"variable": [
 								{
 									"key": "user_id",
-									"value": "1"
+									"value": "{{user_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -316,7 +565,34 @@
 			"item": [
 				{
 					"name": "Create Guest",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('guest_test_id', responseBody.id);\r",
+									"pm.environment.set('guest_test_hash_link', responseBody.hash_link);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -327,7 +603,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Guest Name\",\n    \"email\": \"guest@example.com\",\n    \"phone\": \"+5511999999999\"\n}",
+							"raw": "{\n    \"name\": \"Guest other Name\",\n    \"email\": \"guest@example.com\",\n    \"phone\": \"+5511999999999\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -335,15 +611,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/guests/",
-							"host": ["{{base_url}}"],
-							"path": ["guests"]
+							"raw": "{{base_url}}/guests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "List User Guests",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -354,8 +645,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/guests/me?skip=0&limit=100",
-							"host": ["{{base_url}}"],
-							"path": ["guests", "me"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests",
+								"me"
+							],
 							"query": [
 								{
 									"key": "skip",
@@ -367,11 +663,22 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Guest by ID",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -382,20 +689,36 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/guests/:guest_id",
-							"host": ["{{base_url}}"],
-							"path": ["guests", ":guest_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests",
+								":guest_id"
+							],
 							"variable": [
 								{
 									"key": "guest_id",
-									"value": "1"
+									"value": "{{guest_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Guest",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -415,20 +738,36 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/guests/:guest_id",
-							"host": ["{{base_url}}"],
-							"path": ["guests", ":guest_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests",
+								":guest_id"
+							],
 							"variable": [
 								{
 									"key": "guest_id",
-									"value": "1"
+									"value": "{{guest_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Guest",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -439,16 +778,22 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/guests/:guest_id",
-							"host": ["{{base_url}}"],
-							"path": ["guests", ":guest_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests",
+								":guest_id"
+							],
 							"variable": [
 								{
 									"key": "guest_id",
-									"value": "1"
+									"value": "{{guest_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Confirm Guest Presence",
@@ -457,8 +802,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/guests/confirm/:hash_link",
-							"host": ["{{base_url}}"],
-							"path": ["guests", "confirm", ":hash_link"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests",
+								"confirm",
+								":hash_link"
+							],
 							"variable": [
 								{
 									"key": "hash_link",
@@ -466,7 +817,36 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "remember Guest Invitations Confirmation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/guests/send_invitation_all_guests_not_confirmed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"guests",
+								"send_invitation_all_guests_not_confirmed"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -475,7 +855,33 @@
 			"item": [
 				{
 					"name": "Create Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('schedule_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -486,7 +892,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Cronograma do Casamento\",\n    \"items\": [\n        {\n            \"title\": \"Cerimônia\",\n            \"description\": \"Início da cerimônia\",\n            \"time\": \"2024-12-31T16:00:00\"\n        }\n    ]\n}",
+							"raw": "{\n    \"title\": \"Cronograma do Casamento\",\n    \"data_casamento\": \"2025-05-29\",\n    \"items\": [\n        {\n            \"title\": \"Cerimônia\",\n            \"description\": \"Início da cerimônia\",\n            \"time\": \"2024-12-31T16:00:00\"\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -494,15 +900,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/schedule/",
-							"host": ["{{base_url}}"],
-							"path": ["schedule"]
+							"raw": "{{base_url}}/schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Schedule",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -512,15 +933,30 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/schedule/",
-							"host": ["{{base_url}}"],
-							"path": ["schedule"]
+							"raw": "{{base_url}}/schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Schedule",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -531,7 +967,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Novo Título do Cronograma\"\n}",
+							"raw": "{\n    \"title\": \"Novo Título do Cronograma\",\n    \"data_casamento\": \"2025-05-29\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -539,15 +975,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/schedule/",
-							"host": ["{{base_url}}"],
-							"path": ["schedule"]
+							"raw": "{{base_url}}/schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Schedule",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -557,15 +1008,46 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/schedule/",
-							"host": ["{{base_url}}"],
-							"path": ["schedule"]
+							"raw": "{{base_url}}/schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Schedule Item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('schedule_item_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -585,14 +1067,30 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/schedule/items",
-							"host": ["{{base_url}}"],
-							"path": ["schedule", "items"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule",
+								"items"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Schedule Item",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -612,20 +1110,37 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/schedule/items/:item_id",
-							"host": ["{{base_url}}"],
-							"path": ["schedule", "items", ":item_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule",
+								"items",
+								":item_id"
+							],
 							"variable": [
 								{
 									"key": "item_id",
-									"value": "1"
+									"value": "{{schedule_item_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Schedule Item",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -636,16 +1151,23 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/schedule/items/:item_id",
-							"host": ["{{base_url}}"],
-							"path": ["schedule", "items", ":item_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"schedule",
+								"items",
+								":item_id"
+							],
 							"variable": [
 								{
 									"key": "item_id",
-									"value": "1"
+									"value": "{{schedule_item_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -654,6 +1176,22 @@
 			"item": [
 				{
 					"name": "Upload Photo (Guest)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('photo_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -663,22 +1201,29 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": []
+									"src": "/C:/Users/Filipe Damasceno/OneDrive/Área de Trabalho/asasasa.jpeg"
 								}
 							]
 						},
 						"url": {
 							"raw": "{{base_url}}/photos/upload/:guest_hash",
-							"host": ["{{base_url}}"],
-							"path": ["photos", "upload", ":guest_hash"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"photos",
+								"upload",
+								":guest_hash"
+							],
 							"variable": [
 								{
 									"key": "guest_hash",
-									"value": "guest-hash-value"
+									"value": "{{guest_test_hash_link}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Guest Photos by Hash",
@@ -687,8 +1232,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/photos/guest/:guest_hash?skip=0&limit=100",
-							"host": ["{{base_url}}"],
-							"path": ["photos", "guest", ":guest_hash"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"photos",
+								"guest",
+								":guest_hash"
+							],
 							"query": [
 								{
 									"key": "skip",
@@ -702,15 +1253,26 @@
 							"variable": [
 								{
 									"key": "guest_hash",
-									"value": "guest-hash-value"
+									"value": "{{guest_test_hash_link}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get User Photos",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -721,8 +1283,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/photos/user?skip=0&limit=100",
-							"host": ["{{base_url}}"],
-							"path": ["photos", "user"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"photos",
+								"user"
+							],
 							"query": [
 								{
 									"key": "skip",
@@ -734,11 +1301,22 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Guest Photos by ID",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -749,8 +1327,15 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/photos/user/guest/:guest_id?skip=0&limit=100",
-							"host": ["{{base_url}}"],
-							"path": ["photos", "user", "guest", ":guest_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"photos",
+								"user",
+								"guest",
+								":guest_id"
+							],
 							"query": [
 								{
 									"key": "skip",
@@ -764,15 +1349,26 @@
 							"variable": [
 								{
 									"key": "guest_id",
-									"value": "1"
+									"value": "{{guest_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Photo",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -783,16 +1379,22 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/photos/:photo_id",
-							"host": ["{{base_url}}"],
-							"path": ["photos", ":photo_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"photos",
+								":photo_id"
+							],
 							"variable": [
 								{
 									"key": "photo_id",
-									"value": "1"
+									"value": "{{photo_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -800,171 +1402,552 @@
 			"name": "Photo Challenge",
 			"item": [
 				{
-					"name": "Create Challenge",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"title\": \"Desafio dos Noivos\",\n    \"description\": \"Tire fotos com os noivos\",\n    \"tasks\": [\n        {\n            \"title\": \"Foto com os noivos\",\n            \"description\": \"Tire uma foto com os noivos\"\n        }\n    ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+					"name": "Challenge",
+					"item": [
+						{
+							"name": "Create Challenge",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Desafio dos Noivos\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/photo-challenge",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge"
+									]
+								}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge"]
-						}
-					}
-				},
-				{
-					"name": "List Challenges",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge"]
-						}
-					}
-				},
-				{
-					"name": "Get Challenge",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/:challenge_id",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge", ":challenge_id"],
-							"variable": [
-								{
-									"key": "challenge_id",
-									"value": "1"
+						{
+							"name": "Get Challenge",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										""
+									]
 								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Challenge",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"title\": \"Desafio Atualizado\",\n    \"description\": \"Nova descrição do desafio\",\n    \"tasks\": [\n        {\n            \"title\": \"Nova Tarefa\",\n            \"description\": \"Descrição da nova tarefa\"\n        }\n    ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/:challenge_id",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge", ":challenge_id"],
-							"variable": [
-								{
-									"key": "challenge_id",
-									"value": "1"
+						{
+							"name": "Update Challenge",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Desafio Atualizado\"\n    \n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										""
+									]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Challenge",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										""
+									]
+								}
+							},
+							"response": []
 						}
-					}
+					]
 				},
 				{
-					"name": "Delete Challenge",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/:challenge_id",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge", ":challenge_id"],
-							"variable": [
+					"name": "Challenge Task",
+					"item": [
+						{
+							"name": "Create Challenge Task",
+							"event": [
 								{
-									"key": "challenge_id",
-									"value": "1"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response body\r",
+											"const responseBody = pm.response.json();\r",
+											"\r",
+											"// Save the access token to the environment variable\r",
+											"pm.environment.set('photo_challenge_task_test_id', responseBody.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							]
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"uma foto com os pais dos noivos\",\n  \"description\": \"tire a foto mais inusitada com os pais dos noivos\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/task",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"task"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Challenge Task",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/task/:task_id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"task",
+										":task_id"
+									],
+									"variable": [
+										{
+											"key": "task_id",
+											"value": "{{photo_challenge_task_test_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Challenge Task",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"uma foto aleatoria do teto\",\n  \"description\": \"tire a foto do teto\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/task/:task_id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"task",
+										":task_id"
+									],
+									"variable": [
+										{
+											"key": "task_id",
+											"value": "{{photo_challenge_task_test_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Challenge Task",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/task/:task_id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"task",
+										":task_id"
+									],
+									"variable": [
+										{
+											"key": "task_id",
+											"value": "{{photo_challenge_task_test_id}}"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					}
+					]
 				},
 				{
 					"name": "Complete Challenge Task",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"photo_id\": 1\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+					"item": [
+						{
+							"name": "Complete Challenge Task",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/guest/:guest_hash/task/:task_id/photo_id/:photo_id/complete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"guest",
+										":guest_hash",
+										"task",
+										":task_id",
+										"photo_id",
+										":photo_id",
+										"complete"
+									],
+									"variable": [
+										{
+											"key": "guest_hash",
+											"value": "{{guest_test_hash_link}}"
+										},
+										{
+											"key": "task_id",
+											"value": "{{photo_challenge_task_test_id}}"
+										},
+										{
+											"key": "photo_id",
+											"value": "{{photo_test_id}}"
+										}
+									]
 								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/:challenge_id/tasks/:task_id/complete",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge", ":challenge_id", "tasks", ":task_id", "complete"],
-							"variable": [
-								{
-									"key": "challenge_id",
-									"value": "1"
+						{
+							"name": "Complete Challenge Task with photo",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/C:/Users/Filipe Damasceno/OneDrive/Área de Trabalho/asasasa.jpeg"
+										}
+									]
 								},
-								{
-									"key": "task_id",
-									"value": "1"
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/guest/:guest_hash/task/:task_id/with_photo/complete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"guest",
+										":guest_hash",
+										"task",
+										":task_id",
+										"with_photo",
+										"complete"
+									],
+									"variable": [
+										{
+											"key": "guest_hash",
+											"value": "{{guest_test_hash_link}}"
+										},
+										{
+											"key": "task_id",
+											"value": "{{photo_challenge_task_test_id}}"
+										}
+									]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Update  Complete Challenge Task",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/guest/:guest_hash/task/:task_id/photo_id/:photo_id/complete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"guest",
+										":guest_hash",
+										"task",
+										":task_id",
+										"photo_id",
+										":photo_id",
+										"complete"
+									],
+									"variable": [
+										{
+											"key": "guest_hash",
+											"value": "{{guest_test_hash_link}}"
+										},
+										{
+											"key": "task_id",
+											"value": "{{photo_challenge_task_test_id}}"
+										},
+										{
+											"key": "photo_id",
+											"value": "{{photo_test_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Guest Challenges",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/photo-challenge/guest/:guest_hash/summary",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"photo-challenge",
+										"guest",
+										":guest_hash",
+										"summary"
+									],
+									"variable": [
+										{
+											"key": "guest_hash",
+											"value": "{{guest_test_hash_link}}"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					}
+					]
 				},
 				{
 					"name": "Get Challenge Progress",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -974,35 +1957,17 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/photo-challenge/:challenge_id/progress",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge", ":challenge_id", "progress"],
-							"variable": [
-								{
-									"key": "challenge_id",
-									"value": "1"
-								}
+							"raw": "{{base_url}}/photo-challenge/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"photo-challenge",
+								"summary"
 							]
 						}
-					}
-				},
-				{
-					"name": "Get Guest Challenges",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/photo-challenge/guest/:guest_hash",
-							"host": ["{{base_url}}"],
-							"path": ["photo-challenge", "guest", ":guest_hash"],
-							"variable": [
-								{
-									"key": "guest_hash",
-									"value": "guest-hash-value"
-								}
-							]
-						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1011,7 +1976,33 @@
 			"item": [
 				{
 					"name": "Create Timeline",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('timeline_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1030,15 +2021,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/timeline/",
-							"host": ["{{base_url}}"],
-							"path": ["timeline"]
+							"raw": "{{base_url}}/timeline",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get My Timeline",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -1049,14 +2055,30 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/timeline/me",
-							"host": ["{{base_url}}"],
-							"path": ["timeline", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update My Timeline",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -1076,14 +2098,30 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/timeline/me",
-							"host": ["{{base_url}}"],
-							"path": ["timeline", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete My Timeline",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -1094,14 +2132,46 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/timeline/me",
-							"host": ["{{base_url}}"],
-							"path": ["timeline", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Timeline Item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('timeline_item_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1112,7 +2182,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Primeiro Encontro\",\n    \"date\": \"2020-01-01\",\n    \"text\": \"Nosso primeiro encontro foi muito especial\",\n    \"image_url\": \"https://example.com/image.jpg\"\n}",
+							"raw": "{\n    \"title\": \"Primeiro Encontro\",\n    \"date\": \"2024-12-31T17:00:00\",\n    \"text\": \"Nosso primeiro encontro foi muito especial\",\n    \"image_url\": \"https://example.com/image.jpg\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1121,14 +2191,31 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/timeline/me/items",
-							"host": ["{{base_url}}"],
-							"path": ["timeline", "me", "items"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline",
+								"me",
+								"items"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Timeline Item",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -1148,20 +2235,38 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/timeline/me/items/:item_id",
-							"host": ["{{base_url}}"],
-							"path": ["timeline", "me", "items", ":item_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline",
+								"me",
+								"items",
+								":item_id"
+							],
 							"variable": [
 								{
 									"key": "item_id",
-									"value": "1"
+									"value": "{{timeline_item_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Timeline Item",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -1172,16 +2277,24 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/timeline/me/items/:item_id",
-							"host": ["{{base_url}}"],
-							"path": ["timeline", "me", "items", ":item_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timeline",
+								"me",
+								"items",
+								":item_id"
+							],
 							"variable": [
 								{
 									"key": "item_id",
-									"value": "1"
+									"value": "{{timeline_item_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1191,6 +2304,16 @@
 				{
 					"name": "Create Invitation",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1201,7 +2324,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Nosso Casamento\",\n    \"date\": \"2024-12-31\",\n    \"location\": \"Local do Evento\",\n    \"description\": \"Descrição do evento\"\n}",
+							"raw": "{\n    \"intro_text\": \"Estamos convidando voces para participar desse momento expecial para nos, o nosso casamento, contamos com a sua presença!\",\n    \"background_image_url\": \"caisadasdasd\",\n    \"video_url\": \"https://youtube.com/watch\",\n    \"photo_album_url\": \"endereco\",\n    \"background_color\": \"#000000\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1209,15 +2332,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/invitations/",
-							"host": ["{{base_url}}"],
-							"path": ["invitations"]
+							"raw": "{{base_url}}/invitations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get My Invitation",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -1228,14 +2366,30 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/invitations/me",
-							"host": ["{{base_url}}"],
-							"path": ["invitations", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update My Invitation",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -1246,7 +2400,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Título Atualizado\",\n    \"date\": \"2024-12-31\",\n    \"location\": \"Novo Local\",\n    \"description\": \"Nova descrição\"\n}",
+							"raw": "{\n    \"intro_text\": \"Estamos convidando apenas você para participar desse momento expecial para nos, o nosso casamento, contamos com a sua presença!\",\n    \"video_url\": \"https://youtube.com/watch\",\n    \"photo_album_url\": \"endereco\",\n    \"background_image_url\": \"Outra imagem\",\n    \"background_color\": \"#BBBBBB\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1255,10 +2409,16 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/invitations/me",
-							"host": ["{{base_url}}"],
-							"path": ["invitations", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete My Invitation",
@@ -1273,10 +2433,16 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/invitations/me",
-							"host": ["{{base_url}}"],
-							"path": ["invitations", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Guest Invitation",
@@ -1285,16 +2451,87 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/invitations/guest/:hash_link",
-							"host": ["{{base_url}}"],
-							"path": ["invitations", "guest", ":hash_link"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations",
+								"guest",
+								":hash_link"
+							],
 							"variable": [
 								{
 									"key": "hash_link",
-									"value": "guest-hash-value"
+									"value": "{{guest_test_hash_link}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Guest Invitation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/invitations/guest/:hash_link/send_invitation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations",
+								"guest",
+								":hash_link",
+								"send_invitation"
+							],
+							"variable": [
+								{
+									"key": "hash_link",
+									"value": "{{guest_test_hash_link}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send All Guest Invitations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/invitations/send_invitation_all_guests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invitations",
+								"send_invitation_all_guests"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1304,6 +2541,16 @@
 				{
 					"name": "Create Gift Shop",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1322,15 +2569,30 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/gift-shop/",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop"]
+							"raw": "{{base_url}}/gift-shop",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get My Gift Shop",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -1341,14 +2603,30 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update My Gift Shop",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -1359,7 +2637,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nova Lista de Presentes\",\n    \"pix_key\": \"98765432100\"\n}",
+							"raw": "{\n    \"name\": \"Nova Lista de Presentes\",\n    \"pix_key\": \"eaf66fe2-338d-404d-b17c-7df953da4521\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1368,14 +2646,30 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete My Gift Shop",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -1386,14 +2680,46 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"const responseBody = pm.response.json();\r",
+									"\r",
+									"// Save the access token to the environment variable\r",
+									"pm.environment.set('gift_shop_product_test_id', responseBody.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1404,7 +2730,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Produto Exemplo\",\n    \"description\": \"Descrição do produto\",\n    \"price\": 199.99,\n    \"image\": \"base64_encoded_image\"\n}",
+							"raw": "{\n    \"name\": \"Produto Exemplo\",\n    \"description\": \"Descrição do produto\",\n    \"price\": 0.99,\n    \"image\": \"http://uma imagem da internet\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1413,14 +2739,31 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me/products",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me", "products"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me",
+								"products"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "List Products",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -1431,14 +2774,31 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me/products",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me", "products"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me",
+								"products"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Product",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [
 							{
@@ -1449,7 +2809,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Produto Atualizado\",\n    \"description\": \"Nova descrição\",\n    \"price\": 299.99,\n    \"image\": \"base64_encoded_image\"\n}",
+							"raw": "{\n    \"name\": \"Produto Atualizado\",\n    \"description\": \"Nova descrição\",\n    \"price\": 299.99,\n    \"image\": \"https://base64_encoded_image\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1458,20 +2818,38 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me/products/:product_id",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me", "products", ":product_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me",
+								"products",
+								":product_id"
+							],
 							"variable": [
 								{
 									"key": "product_id",
-									"value": "1"
+									"value": "{{gift_shop_product_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Product",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [
 							{
@@ -1482,18 +2860,152 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/gift-shop/me/products/:product_id",
-							"host": ["{{base_url}}"],
-							"path": ["gift-shop", "me", "products", ":product_id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"me",
+								"products",
+								":product_id"
+							],
 							"variable": [
 								{
 									"key": "product_id",
-									"value": "1"
+									"value": "{{gift_shop_product_test_id}}"
 								}
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the Gift Shop As Guest",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/guest/:guest_hash",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"guest",
+								":guest_hash"
+							],
+							"variable": [
+								{
+									"key": "guest_hash",
+									"value": "{{guest_test_hash_link}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buy A Procuct",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/buy-gift/:product_id/guest/:guest_hash",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"buy-gift",
+								":product_id",
+								"guest",
+								":guest_hash"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "{{gift_shop_product_test_id}}"
+								},
+								{
+									"key": "guest_hash",
+									"value": "{{guest_test_hash_link}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pay The Procuct",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gift-shop/buy-gift/:product_id/guest/:guest_hash/payed/:payed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gift-shop",
+								"buy-gift",
+								":product_id",
+								"guest",
+								":guest_hash",
+								"payed",
+								":payed"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "{{gift_shop_product_test_id}}"
+								},
+								{
+									"key": "guest_hash",
+									"value": "{{guest_test_hash_link}}"
+								},
+								{
+									"key": "payed",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
 	]
-} 
+}

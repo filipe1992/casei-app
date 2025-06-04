@@ -7,6 +7,7 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     full_name: Optional[str] = None
 
+
 class UserCreate(UserBase):
     email: EmailStr
     password: str

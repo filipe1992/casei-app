@@ -3,14 +3,18 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
-from app.crud.gift_shop import get_user_gift_shop, create_gift_shop, update_gift_shop, delete_gift_shop, get_shop_products, get_gift_product, create_gift_product, update_gift_product, delete_gift_product
+from app.crud import gift_shop as gift_shop_crud
 from app.schemas.gift_shop import (
     GiftShop,
+    GiftShopBase,
+    GiftShopBuyProductBase,
     GiftShopCreate,
     GiftShopUpdate,
     GiftProduct,
     GiftProductCreate,
-    GiftProductUpdate
+    GiftProductUpdate,
+    GiftShopBuyProduct,
+    GiftShopWithProducts
 )
 from app.models.user import User
 from app.db.session import get_db
@@ -29,7 +33,7 @@ router = APIRouter()
 
 @router.post(
     "/",
-    response_model=GiftShop,
+    response_model=GiftShopBase,
     status_code=status.HTTP_201_CREATED,
     responses={
         201: {"description": "Loja criada com sucesso"},
@@ -49,14 +53,14 @@ async def create_gift_shop(
     - Cada usuário só pode ter uma loja
     - É necessário fornecer um nome e uma chave PIX
     """
-    existing_shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    existing_shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if existing_shop:
         raise create_already_exists_error(
             resource_type="Loja de Presentes",
             identifier=current_user.id
         )
     
-    shop = await create_gift_shop(
+    shop = await gift_shop_crud.create_gift_shop(
         db=db,
         shop_in=shop_in,
         user_id=current_user.id
@@ -79,7 +83,7 @@ async def read_gift_shop(
     """
     Recuperar a loja de presentes do usuário atual.
     """
-    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
@@ -104,14 +108,14 @@ async def update_gift_shop(
     """
     Atualizar a loja de presentes do usuário atual.
     """
-    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    shop = await update_gift_shop(
+    shop = await gift_shop_crud.update_gift_shop(
         db=db,
         shop=shop,
         shop_in=shop_in
@@ -136,7 +140,7 @@ async def delete_gift_shop(
     
     - A operação também remove todos os produtos associados
     """
-    shop = await delete_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.delete_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
@@ -170,7 +174,7 @@ async def create_gift_product(
     - Preço é obrigatório e deve ser positivo
     - Imagem é obrigatória e deve estar em formato base64
     """
-    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
@@ -178,7 +182,7 @@ async def create_gift_product(
         )
     
     try:
-        product = await create_gift_product(
+        product = await gift_shop_crud.create_gift_product(
             db=db,
             product_in=product_in,
             shop_id=shop.id
@@ -207,14 +211,14 @@ async def read_gift_products(
     """
     Listar todos os produtos da loja do usuário atual.
     """
-    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    return await get_shop_products(db=db, shop_id=shop.id)
+    return await gift_shop_crud.get_shop_products(db=db, shop_id=shop.id)
 
 @router.put(
     "/me/products/{product_id}",
@@ -238,14 +242,14 @@ async def update_gift_product(
     - Todos os campos são opcionais na atualização
     - Se fornecida, a imagem deve estar em formato base64
     """
-    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    product = await get_gift_product(db=db, product_id=product_id)
+    product = await gift_shop_crud.get_gift_product(db=db, product_id=product_id)
     if not product:
         raise create_not_found_error(
             resource_type="Produto",
@@ -259,7 +263,7 @@ async def update_gift_product(
         )
     
     try:
-        product = await update_gift_product(
+        product = await gift_shop_crud.update_gift_product(
             db=db,
             product=product,
             product_in=product_in
@@ -289,14 +293,14 @@ async def delete_gift_product(
     """
     Deletar um produto específico da loja do usuário atual.
     """
-    shop = await get_user_gift_shop(db=db, user_id=current_user.id)
+    shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
             resource_type="Loja de Presentes",
             resource_id=current_user.id
         )
     
-    product = await get_gift_product(db=db, product_id=product_id)
+    product = await gift_shop_crud.get_gift_product(db=db, product_id=product_id)
     if not product:
         raise create_not_found_error(
             resource_type="Produto",
@@ -309,5 +313,73 @@ async def delete_gift_product(
             resource_id=product_id
         )
     
-    product = await delete_gift_product(db=db, product_id=product_id)
+    product = await gift_shop_crud.delete_gift_product(db=db, product_id=product_id)
     return product 
+
+@router.get(
+    "/guest/{guest_hash}",
+    response_model=GiftShopWithProducts,
+    responses={
+        200: {"description": "Loja recuperada com sucesso"},
+        404: {"description": "Recurso não encontrado"},
+        500: {"description": "Erro do sistema"}
+    }
+)
+async def read_gift_shop_by_guest_hash(
+    guest_hash: str,
+    db: Session = Depends(get_db),
+) -> Any:
+    """
+    Recuperar a loja de presentes do usuário atual.
+    """
+    shop = await gift_shop_crud.get_gift_shop_by_guest_hash(db=db, guest_hash=guest_hash)
+    if not shop:
+        raise create_not_found_error(
+            resource_type="Loja de Presentes",
+            resource_id=guest_hash
+        )
+    return shop
+
+
+@router.get(
+    "/buy-gift/{product_id}/guest/{guest_hash}",
+    response_model=GiftShopBuyProduct,
+    responses={
+        200: {"description": "Loja recuperada com sucesso"},
+        404: {"description": "Recurso não encontrado"},
+        500: {"description": "Erro do sistema"}
+    }
+)
+async def buy_gift_product(
+    product_id: int,
+    guest_hash: str,
+    db: Session = Depends(get_db),
+) -> Any:
+    """
+    Comprar um produto da loja de presentes do usuário atual.
+    """
+    gift_shop_buy_product = await gift_shop_crud.buy_gift_product(db=db, product_id=product_id, guest_hash=guest_hash)
+    
+    return gift_shop_buy_product
+
+
+@router.put(
+    "/buy-gift/{product_id}/guest/{guest_hash}/payed/{is_payed}",
+    response_model=GiftShopBuyProductBase,
+    responses={
+        200: {"description": "Loja recuperada com sucesso"},
+        404: {"description": "Recurso não encontrado"},
+        500: {"description": "Erro do sistema"}
+    }
+)
+async def update_gift_shop_buy_product(
+    product_id: int,
+    guest_hash: str,
+    is_payed: bool,
+    db: Session = Depends(get_db),
+) -> Any:
+    """
+    Atualizar o status de pagamento de um produto da loja de presentes do usuário atual.
+    """
+    gift_shop_buy_product = await gift_shop_crud.update_gift_shop_buy_product(db=db, product_id=product_id, guest_hash=guest_hash, is_payed=is_payed)
+    return gift_shop_buy_product

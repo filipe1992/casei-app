@@ -4,18 +4,11 @@ from fastapi import HTTPException, status
 
 class ErrorCode(str, Enum):
     # Códigos de erro 404 - Not Found
-    TIMELINE_NOT_FOUND = "TIMELINE_NOT_FOUND"
-    TIMELINE_ITEM_NOT_FOUND = "TIMELINE_ITEM_NOT_FOUND"
-    USER_NOT_FOUND = "USER_NOT_FOUND"
-    GUEST_NOT_FOUND = "GUEST_NOT_FOUND"
-    INVITATION_NOT_FOUND = "INVITATION_NOT_FOUND"
-    
+    NOT_FOUND = "NOT_FOUND"
+
     # Códigos de erro 400 - Business Error
     ALREADY_EXISTS = "ALREADY_EXISTS"
     ACCESS_DENIED = "ACCESS_DENIED"
-    INVALID = "ITEM_INVALID"
-    INVALID_VIDEO_URL = "INVALID_VIDEO_URL"
-    INVALID_IMAGE_URL = "INVALID_IMAGE_URL"
     INVALID_CONTENT = "INVALID_CONTENT"
     
     # Códigos de erro 500 - System Error
