@@ -6,7 +6,7 @@ from app.models.user import User  # noqa
 from app.models.guest import Guest  # noqa
 from app.models.invitation import Invitation  # noqa
 from app.models.timeline import Timeline, TimelineItem  # noqa
-from app.models.gift_shop import GiftShop, GiftProduct, GiftShopBuyProduct  # noqa
+from app.models.gift_shop import GiftShop, GiftProduct, GiftShopPurchase  # noqa
 from app.models.photo import Photo  # noqa
 from app.models.photo_challenge import PhotoChallenge, ChallengeTask, CompletedChallengeTask  # noqa
 from app.models.schedule import Schedule, ScheduleItem  # noqa

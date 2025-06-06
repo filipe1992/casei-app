@@ -23,4 +23,4 @@ class Guest(Base):
     completed_challenge_tasks = relationship("CompletedChallengeTask", back_populates="guest", cascade="all, delete-orphan") 
 
     # Relacionamento com as compras da loja de presentes
-    buy_products = relationship("GiftShopBuyProduct", back_populates="guest", cascade="all, delete-orphan")
+    purchases = relationship("GiftShopPurchase", back_populates="guest", cascade="all, delete-orphan")

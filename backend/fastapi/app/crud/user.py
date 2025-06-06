@@ -4,6 +4,7 @@ from app.schemas.user import UserCreate, UserUpdate
 from app.auth.auth import get_password_hash, verify_password
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
@@ -17,6 +18,10 @@ async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
 
 async def get_user_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
     result = await db.execute(select(User).where(User.id == user_id))
+    return result.scalar_one_or_none()
+
+async def get_user_with_configuration_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
+    result = await db.execute(select(User).options(selectinload(User.configuration)).where(User.id == user_id))
     return result.scalar_one_or_none()
 
 async def create_user(db: AsyncSession, user_in: UserCreate) -> User:

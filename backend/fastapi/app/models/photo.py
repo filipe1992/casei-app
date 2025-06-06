@@ -24,6 +24,9 @@ class Photo(Base):
 
     # Relacionamento com os itens da timeline
     timeline_items = relationship("TimelineItem", back_populates="photo", lazy="joined")
+
+    # Relacionamento com produtos da loja de presentes
+    gift_products = relationship("GiftProduct", back_populates="photo", lazy="joined")
     
     
 class PhotoAlbum(Base):

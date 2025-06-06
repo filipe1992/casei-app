@@ -5,12 +5,13 @@ from pydantic import BaseModel, Field, validator
 
 from app.schemas.guest import Guest
 from app.schemas.user import User
+from app.schemas.invitation import PhotoBase
 
-class GiftShopBuyProductBase(BaseModel):
+class GiftShopPurchaseBase(BaseModel):
     id: int
     created_at: datetime
-    payed: bool
-    payed_at: Optional[datetime] = None
+    paid: bool
+    paid_at: Optional[datetime] = None
     #guest: Guest
 
     class Config:
@@ -20,64 +21,72 @@ class GiftProductBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=1000)
     price: Decimal = Field(..., ge=0, le=99999999.99)
+    image: Optional[str] = None
+    photo_id: Optional[int] = None
+
+    #validado para que o campo image seja uma url
+    @validator('image')
+    def validate_image(cls, v):
+        if v and not v.startswith('http'):
+            raise ValueError("A imagem deve ser uma URL válida")
+        return v
+    
+    #validar para que não seja passado photo_id e image ao mesmo tempo
+    @validator('photo_id', 'image')
+    def validate_photo_id_and_image(cls, v, values):
+        if v and values.get('image'):
+            raise ValueError("Não é possível passar photo_id e image ao mesmo tempo")
+        return v
     
 class GiftProductCreate(GiftProductBase):
-    image: str = Field(..., description="URL da imagem")
-    
-    @validator('image')
-    def validate_image_url(cls, v):
-        try:
-            # Verifica se é uma URL válida
-            if not v.startswith(('http://', 'https://')):
-                raise ValueError('A URL deve começar com http:// ou https://')
-            return v
-        except Exception:
-            raise ValueError('A URL da imagem deve ser válida')
+    pass
 
 class GiftProductUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=1000)
     price: Optional[Decimal] = Field(None, ge=0, le=99999999.99)
-    image: Optional[str] = Field(None, description="URL da imagem")
-    
+    image: Optional[str] = None
+    photo_id: Optional[int] = None
+
+    #validado para que o campo image seja uma url
     @validator('image')
-    def validate_image_url(cls, v):
-        if v is None:
-            return v
-        try:
-            if not v.startswith(('http://', 'https://')):
-                raise ValueError('A URL deve começar com http:// ou https://')
-            return v
-        except Exception:
-            raise ValueError('A URL da imagem deve ser válida')
+    def validate_image(cls, v):
+        if v and not v.startswith('http'):
+            raise ValueError("A imagem deve ser uma URL válida")
+        return v
+    
+    #validar para que não seja passado photo_id e image ao mesmo tempo
+    @validator('photo_id', 'image')
+    def validate_photo_id_and_image(cls, v, values):
+        if v and values.get('image'):
+            raise ValueError("Não é possível passar photo_id e image ao mesmo tempo")
+        return v
 
 class GiftProduct(GiftProductBase):
     id: int
     shop_id: int
-    image: str
+    photo: Optional[PhotoBase] = None
     
     class Config:
         from_attributes = True
 
-class GiftProductWithBuyProducts(GiftProductBase):
+class GiftProductWithPurchases(GiftProductBase):
     id: int
     shop_id: int
-    image: str
-    buy_products: Optional[List[GiftShopBuyProductBase]]
+    photo: Optional[PhotoBase] = None
+    purchases: Optional[List[GiftShopPurchaseBase]]
     
     class Config:
         from_attributes = True
 
 class GiftShopBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    pix_key: str = Field(..., min_length=1, max_length=255)
 
 class GiftShopCreate(GiftShopBase):
     pass
 
 class GiftShopUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    pix_key: Optional[str] = Field(None, min_length=1, max_length=255)
 
 class GiftShop(GiftShopBase):
     id: int
@@ -90,19 +99,19 @@ class GiftShop(GiftShopBase):
 class GiftShopWithProducts(GiftShopBase):
     id: int
     user_id: int
-    products: List[GiftProductWithBuyProducts] = []
+    products: List[GiftProductWithPurchases] = []
     
     class Config:
         from_attributes = True
 
-class GiftShopBuyProduct(BaseModel):
-    codigo_pix: str
-    product: GiftProductWithBuyProducts
+class GiftShopPurchase(BaseModel):
+    pix_code: str
+    product: GiftProductWithPurchases
     user: User
     guest: Guest
 
     class Config:
         from_attributes = True
 
-class GiftShopBuyProductUpdate(BaseModel):
-    payed: bool
+class GiftShopPurchaseUpdate(BaseModel):
+    paid: bool

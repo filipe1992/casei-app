@@ -9,13 +9,12 @@ class GiftShop(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    pix_key = Column(String, nullable=False)
     
-    # Relacionamento com o usuário (cada usuário só pode ter uma loja)
+    # Relationship with user (one-to-one)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
     user = relationship("User", back_populates="gift_shop")
     
-    # Relacionamento com os produtos
+    # Relationship with products
     products = relationship("GiftProduct", back_populates="shop", cascade="all, delete-orphan")
 
 class GiftProduct(Base):
@@ -24,29 +23,35 @@ class GiftProduct(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     description = Column(Text)
-    price = Column(Numeric(10, 2), nullable=False)  # Permite valores até 99999999.99
-    image = Column(String, nullable=False)  # URL da imagem
-    
-    # Relacionamento com a loja
+    price = Column(Numeric(10, 2), nullable=False)  # Allows values up to 99999999.99
+    image = Column(String, nullable=True)  # Image URL (legacy)
+
+    # Relationship with photo
+    photo_id = Column(Integer, ForeignKey("photos.id"), nullable=True)
+    photo = relationship("Photo", back_populates="gift_products", uselist=False)
+
+    # Relationship with shop
     shop_id = Column(Integer, ForeignKey("gift_shops.id"), nullable=False)
     shop = relationship("GiftShop", back_populates="products") 
 
-    buy_products = relationship("GiftShopBuyProduct", back_populates="product", cascade="all, delete-orphan")
+    # Relationship with purchases
+    purchases = relationship("GiftShopPurchase", back_populates="product", cascade="all, delete-orphan")
 
 
-class GiftShopBuyProduct(Base):
-    __tablename__ = "gift_shop_buy_products"
+class GiftShopPurchase(Base):
+    __tablename__ = "gift_shop_purchases"
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, nullable=False)
-    payed = Column(Boolean, default=False)
-    payed_at = Column(DateTime, nullable=True)
+    paid = Column(Boolean, default=False)
+    paid_at = Column(DateTime, nullable=True)
 
+    # Relationship with product
     product_id = Column(Integer, ForeignKey("gift_products.id"), nullable=False)
-    product = relationship("GiftProduct", back_populates="buy_products")
+    product = relationship("GiftProduct", back_populates="purchases")
     
+    # Relationship with guest
     guest_id = Column(Integer, ForeignKey("guests.id"), nullable=False)
-    guest = relationship("Guest", back_populates="buy_products")
-    
+    guest = relationship("Guest", back_populates="purchases")
 
 

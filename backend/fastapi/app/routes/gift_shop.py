@@ -7,13 +7,13 @@ from app.crud import gift_shop as gift_shop_crud
 from app.schemas.gift_shop import (
     GiftShop,
     GiftShopBase,
-    GiftShopBuyProductBase,
+    GiftShopPurchaseBase,
     GiftShopCreate,
     GiftShopUpdate,
     GiftProduct,
     GiftProductCreate,
     GiftProductUpdate,
-    GiftShopBuyProduct,
+    GiftShopPurchase,
     GiftShopWithProducts
 )
 from app.models.user import User
@@ -29,17 +29,17 @@ from app.errors.base import (
 
 router = APIRouter()
 
-# Rotas da Loja
+# Shop Routes
 
 @router.post(
     "/",
     response_model=GiftShopBase,
     status_code=status.HTTP_201_CREATED,
     responses={
-        201: {"description": "Loja criada com sucesso"},
-        400: {"description": "Erro de negócio"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        201: {"description": "Shop created successfully"},
+        400: {"description": "Business error"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def create_gift_shop(
@@ -48,10 +48,10 @@ async def create_gift_shop(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Criar nova loja de presentes.
+    Create new gift shop.
     
-    - Cada usuário só pode ter uma loja
-    - É necessário fornecer um nome e uma chave PIX
+    - Each user can have only one shop
+    - A name is required
     """
     existing_shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if existing_shop:
@@ -71,9 +71,9 @@ async def create_gift_shop(
     "/me",
     response_model=GiftShop,
     responses={
-        200: {"description": "Loja recuperada com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Shop retrieved successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def read_gift_shop(
@@ -81,12 +81,12 @@ async def read_gift_shop(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Recuperar a loja de presentes do usuário atual.
+    Get current user's gift shop.
     """
     shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     return shop
@@ -95,9 +95,9 @@ async def read_gift_shop(
     "/me",
     response_model=GiftShop,
     responses={
-        200: {"description": "Loja atualizada com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Shop updated successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def update_gift_shop(
@@ -106,12 +106,12 @@ async def update_gift_shop(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Atualizar a loja de presentes do usuário atual.
+    Update current user's gift shop.
     """
     shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     
@@ -126,9 +126,9 @@ async def update_gift_shop(
     "/me",
     response_model=GiftShop,
     responses={
-        200: {"description": "Loja deletada com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Shop deleted successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def delete_gift_shop(
@@ -136,29 +136,29 @@ async def delete_gift_shop(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Deletar a loja de presentes do usuário atual.
+    Delete current user's gift shop.
     
-    - A operação também remove todos os produtos associados
+    - This operation also removes all associated products
     """
     shop = await gift_shop_crud.delete_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     return shop
 
-# Rotas de Produtos
+# Product Routes
 
 @router.post(
     "/me/products",
     response_model=GiftProduct,
     status_code=status.HTTP_201_CREATED,
     responses={
-        201: {"description": "Produto criado com sucesso"},
-        400: {"description": "Erro de negócio"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        201: {"description": "Product created successfully"},
+        400: {"description": "Business error"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def create_gift_product(
@@ -167,17 +167,17 @@ async def create_gift_product(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Criar novo produto na loja do usuário atual.
+    Create new product in current user's shop.
     
-    Regras de validação:
-    - Nome é obrigatório
-    - Preço é obrigatório e deve ser positivo
-    - Imagem é obrigatória e deve estar em formato base64
+    Validation rules:
+    - Name is required
+    - Price is required and must be positive
+    - Photo ID is optional
     """
     shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     
@@ -191,7 +191,7 @@ async def create_gift_product(
     except ValidationError as e:
         raise create_validation_error(
             error_code=ErrorCode.INVALID_CONTENT,
-            message="Erro de validação dos dados do produto",
+            message="Product data validation error",
             validation_errors=e.errors()
         )
 
@@ -199,9 +199,9 @@ async def create_gift_product(
     "/me/products",
     response_model=List[GiftProduct],
     responses={
-        200: {"description": "Produtos recuperados com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Products retrieved successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def read_gift_products(
@@ -209,12 +209,12 @@ async def read_gift_products(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Listar todos os produtos da loja do usuário atual.
+    List all products from current user's shop.
     """
     shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     
@@ -224,10 +224,10 @@ async def read_gift_products(
     "/me/products/{product_id}",
     response_model=GiftProduct,
     responses={
-        200: {"description": "Produto atualizado com sucesso"},
-        400: {"description": "Erro de negócio"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Product updated successfully"},
+        400: {"description": "Business error"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def update_gift_product(
@@ -237,28 +237,28 @@ async def update_gift_product(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Atualizar um produto específico da loja do usuário atual.
+    Update a specific product from current user's shop.
     
-    - Todos os campos são opcionais na atualização
-    - Se fornecida, a imagem deve estar em formato base64
+    - All fields are optional for update
+    - Photo ID is optional
     """
     shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     
     product = await gift_shop_crud.get_gift_product(db=db, product_id=product_id)
     if not product:
         raise create_not_found_error(
-            resource_type="Produto",
+            resource_type="Product",
             resource_id=product_id
         )
     
     if product.shop_id != shop.id:
         raise create_access_denied_error(
-            resource_type="Produto",
+            resource_type="Product",
             resource_id=product_id
         )
     
@@ -272,7 +272,7 @@ async def update_gift_product(
     except ValidationError as e:
         raise create_validation_error(
             error_code=ErrorCode.INVALID_CONTENT,
-            message="Erro de validação dos dados do produto",
+            message="Product data validation error",
             validation_errors=e.errors()
         )
 
@@ -280,9 +280,9 @@ async def update_gift_product(
     "/me/products/{product_id}",
     response_model=GiftProduct,
     responses={
-        200: {"description": "Produto deletado com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Product deleted successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def delete_gift_product(
@@ -291,25 +291,25 @@ async def delete_gift_product(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Deletar um produto específico da loja do usuário atual.
+    Delete a specific product from current user's shop.
     """
     shop = await gift_shop_crud.get_user_gift_shop(db=db, user_id=current_user.id)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=current_user.id
         )
     
     product = await gift_shop_crud.get_gift_product(db=db, product_id=product_id)
     if not product:
         raise create_not_found_error(
-            resource_type="Produto",
+            resource_type="Product",
             resource_id=product_id
         )
     
     if product.shop_id != shop.id:
         raise create_access_denied_error(
-            resource_type="Produto",
+            resource_type="Product",
             resource_id=product_id
         )
     
@@ -320,9 +320,9 @@ async def delete_gift_product(
     "/guest/{guest_hash}",
     response_model=GiftShopWithProducts,
     responses={
-        200: {"description": "Loja recuperada com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Shop retrieved successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
 async def read_gift_shop_by_guest_hash(
@@ -330,56 +330,51 @@ async def read_gift_shop_by_guest_hash(
     db: Session = Depends(get_db),
 ) -> Any:
     """
-    Recuperar a loja de presentes do usuário atual.
+    Get gift shop by guest hash.
     """
     shop = await gift_shop_crud.get_gift_shop_by_guest_hash(db=db, guest_hash=guest_hash)
     if not shop:
         raise create_not_found_error(
-            resource_type="Loja de Presentes",
+            resource_type="Gift Shop",
             resource_id=guest_hash
         )
     return shop
 
-
 @router.get(
-    "/buy-gift/{product_id}/guest/{guest_hash}",
-    response_model=GiftShopBuyProduct,
+    "/purchase/{product_id}/guest/{guest_hash}",
+    response_model=GiftShopPurchase,
     responses={
-        200: {"description": "Loja recuperada com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Purchase created successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
-async def buy_gift_product(
+async def purchase_gift_product(
     product_id: int,
     guest_hash: str,
     db: Session = Depends(get_db),
 ) -> Any:
     """
-    Comprar um produto da loja de presentes do usuário atual.
+    Purchase a product from the gift shop.
     """
-    gift_shop_buy_product = await gift_shop_crud.buy_gift_product(db=db, product_id=product_id, guest_hash=guest_hash)
-    
-    return gift_shop_buy_product
-
+    return await gift_shop_crud.purchase_gift_product(db=db, product_id=product_id, guest_hash=guest_hash)
 
 @router.put(
-    "/buy-gift/{product_id}/guest/{guest_hash}/payed/{is_payed}",
-    response_model=GiftShopBuyProductBase,
+    "/purchase/{product_id}/guest/{guest_hash}/paid/{is_paid}",
+    response_model=GiftShopPurchaseBase,
     responses={
-        200: {"description": "Loja recuperada com sucesso"},
-        404: {"description": "Recurso não encontrado"},
-        500: {"description": "Erro do sistema"}
+        200: {"description": "Purchase status updated successfully"},
+        404: {"description": "Resource not found"},
+        500: {"description": "System error"}
     }
 )
-async def update_gift_shop_buy_product(
+async def update_gift_shop_purchase(
     product_id: int,
     guest_hash: str,
-    is_payed: bool,
+    is_paid: bool,
     db: Session = Depends(get_db),
 ) -> Any:
     """
-    Atualizar o status de pagamento de um produto da loja de presentes do usuário atual.
+    Update payment status of a gift shop purchase.
     """
-    gift_shop_buy_product = await gift_shop_crud.update_gift_shop_buy_product(db=db, product_id=product_id, guest_hash=guest_hash, is_payed=is_payed)
-    return gift_shop_buy_product
+    return await gift_shop_crud.update_gift_shop_purchase(db=db, product_id=product_id, guest_hash=guest_hash, is_paid=is_paid)

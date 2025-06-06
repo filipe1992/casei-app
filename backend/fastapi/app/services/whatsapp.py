@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 import httpx
 from fastapi import HTTPException
@@ -30,6 +31,7 @@ class WhatsAppService:
         link_preview_high_quality: bool = False,
         session: str = "default"
     ) -> dict:
+        logging.info(f"Enviando mensagem para {phone_number}: {message}")
         """
         Envia uma mensagem de WhatsApp usando a API WAHA.
 
