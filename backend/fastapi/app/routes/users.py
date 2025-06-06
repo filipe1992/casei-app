@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 from app.crud import user as user_crud
 from app.schemas.user import User, UserCreate, UserUpdate
 from app.models.user import User as UserModel
-from app.db.session import get_db
-from app.auth.auth import get_current_user, get_current_active_superuser
+from app.auth.auth import get_db, get_current_user, get_current_active_superuser
+from app.schemas.configuration import Configuration
+from app.crud import configuration as configuration_crud
 
 router = APIRouter()
 
@@ -63,23 +64,14 @@ async def update_user_me(
     """
     Atualiza os dados do usuário atual.
     """
-    if user_in.email and user_in.email != current_user.email:
-        if await user_crud.get_user_by_email(db, email=user_in.email):
-            raise HTTPException(
-                status_code=400,
-                detail="Este email já está em uso."
-            )
+    user = await user_crud.update_user_by_id(db, current_user.id, user_in)
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não encontrado"
+        )
     
-    for field, value in user_in.model_dump(exclude_unset=True).items():
-        if field == "password" and value:
-            setattr(current_user, "hashed_password", user_crud.get_password_hash(value))
-        elif value is not None:
-            setattr(current_user, field, value)
-    
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
-    return current_user
+    return user
 
 @router.get("/{user_id}", response_model=User)
 async def read_user_by_id(

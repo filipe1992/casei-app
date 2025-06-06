@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import hashlib
 import uuid
+import time
 
 from app.models.guest import Guest
 from app.schemas.guest import GuestCreate, GuestUpdate
@@ -33,6 +34,17 @@ async def get_guests_by_user(
     )
     return result.scalars().all()
 
+async def get_unconfirmed_guests_by_user(
+    db: AsyncSession,
+    user_id: int,
+) -> List[Guest]:
+    result = await db.execute(
+        select(Guest)
+        .where(Guest.user_id == user_id)
+        .where(Guest.confirmed == False)
+    )
+    return result.scalars().all()
+
 async def create_guest(
     db: AsyncSession,
     guest_in: GuestCreate,
@@ -56,9 +68,13 @@ async def create_guest(
 
 async def update_guest(
     db: AsyncSession,
-    guest: Guest,
+    guest_id: int,
     guest_in: GuestUpdate
 ) -> Guest:
+    guest = await get_guest(db, guest_id)
+    if not guest:
+        return None
+    
     update_data = guest_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(guest, field, value)
@@ -98,7 +114,7 @@ async def confirm_guest_presence(db: AsyncSession, hash_link: str) -> Optional[G
 
 async def send_invitation_by_whatsapp_all_guests_not_confirmed(db: AsyncSession, user: User) -> None:
     whatsapp = get_whatsapp_service()
-    guests = await get_guests_by_user(db, user.id)
+    guests = await get_unconfirmed_guests_by_user(db, user.id)
     
     logging.info(f"Enviando convite para {len(guests)} convidados")
     for guest in guests:
@@ -110,9 +126,29 @@ async def send_invitation_by_whatsapp_all_guests_not_confirmed(db: AsyncSession,
         try:
             _ = await whatsapp.send_message(
                 phone_number=guest_phone,  # Número sem o '+'
-                message=f"Olá *{guest_name}!*\n\n *{user.full_name} e {user.full_name}* estão entrando em contato para que voce confirme sua presença no casamento.\n\n {guest_link} \n\n\n\n\n> TESTANDO!!!!!!",
+                message=f"Olá *{guest_name}!*\n\n *{user.full_name}* estão entrando em contato para que voce confirme sua presença no casamento.\n\n {guest_link} \n\n\n\n\n> TESTANDO!!!!!!",
                 reply_to=guest.whatsapp_invite_id
             )
         except Exception as e:
             logging.error(f"Erro ao enviar mensagem: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Erro ao enviar mensagem: {str(e)}")
+
+async def send_reaction_to_all_guests_not_confirmed(db: AsyncSession, user: User) -> None:
+    whatsapp = get_whatsapp_service()
+    guests = await get_unconfirmed_guests_by_user(db, user.id)
+    
+    logging.info(f"Enviando convite para {len(guests)} convidados")
+    for guest in guests:
+
+        try:
+            await whatsapp.send_reaction(
+                message_id=guest.whatsapp_invite_id,
+                reaction="🤔", # :thinking:
+                session="default"
+            )
+        except Exception as e:
+            logging.error(f"Erro ao enviar mensagem: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Erro ao enviar mensagem: {str(e)}")
+        time.sleep(1)
+    logging.info(f"Reação enviada para todos os convidados não confirmados")
+

@@ -28,11 +28,17 @@ class User(Base):
     
     # Relacionamento com as fotos
     photos = relationship("Photo", back_populates="user", cascade="all, delete-orphan")
+
+    # Relacionamento com os álbuns de fotos
+    photo_albums = relationship("PhotoAlbum", back_populates="user", cascade="all, delete-orphan")
     
     # Relacionamento com os desafios de fotos
     photo_challenges = relationship("PhotoChallenge", back_populates="user", cascade="all, delete-orphan")
     
     # Relacionamento com o cronograma (one-to-one)
     schedule = relationship("Schedule", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+    # Relacionamento com a configuração (one-to-one)
+    configuration = relationship("Configuration", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 

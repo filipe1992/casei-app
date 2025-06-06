@@ -67,7 +67,8 @@ async def update_guest(
         raise HTTPException(status_code=404, detail="Convidado não encontrado")
     if guest.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Sem permissão para modificar este convidado")
-    guest = await guest_crud.update_guest(db=db, guest=guest, guest_in=guest_in)
+    
+    guest = await guest_crud.update_guest(db=db, guest_id=guest_id, guest_in=guest_in)
     return guest
 
 @router.delete("/{guest_id}", response_model=Guest)
@@ -112,3 +113,15 @@ async def send_invitation_all_guests_not_confirmed(
     except Exception as e:
         logging.error(f"Erro ao enviar convite para todos os convidados não confirmados: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao enviar convite para todos os convidados não confirmados: {str(e)}")
+    
+
+@router.post("/send_reaction_all_guests_not_confirmed")
+async def send_reaction_all_guests_not_confirmed(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Enviar reação para todos os convidados não confirmados.
+    """
+    await guest_crud.send_reaction_to_all_guests_not_confirmed(db=db, user=current_user)
+    return {"message": "Reação enviada para todos os convidados não confirmados"}

@@ -15,9 +15,9 @@ class Guest(Base):
     # Relacionamento com o usuário (dono do evento)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="guests")
-    
-    # Relacionamento com as fotos
-    photos = relationship("Photo", back_populates="guest", cascade="all, delete-orphan")
+
+    # Relacionamento com os álbuns de fotos
+    photo_albums = relationship("PhotoAlbum", back_populates="guest", cascade="all, delete-orphan")
     
     # Relacionamento com as tasks de desafios
     completed_challenge_tasks = relationship("CompletedChallengeTask", back_populates="guest", cascade="all, delete-orphan") 

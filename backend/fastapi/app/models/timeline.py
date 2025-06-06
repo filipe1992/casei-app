@@ -22,9 +22,12 @@ class TimelineItem(Base):
     title = Column(String, nullable=False)
     text = Column(Text)
     video_url = Column(String)
-    image_url = Column(String)
     date = Column(DateTime, nullable=False)  # Nova coluna para data
     
     # Relacionamento com a timeline
     timeline_id = Column(Integer, ForeignKey("timelines.id"), nullable=False)
     timeline = relationship("Timeline", back_populates="items") 
+
+    # relacionamento com a foto
+    photo_id = Column(Integer, ForeignKey("photos.id"), nullable=True)
+    photo = relationship("Photo", back_populates="timeline_items", uselist=False)

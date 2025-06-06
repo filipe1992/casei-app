@@ -1,25 +1,32 @@
 from typing import Optional
 from app.errors.base import create_validation_error, ErrorCode
-from pydantic import BaseModel, HttpUrl, validator
-import re
+from pydantic import BaseModel, validator  
 from app.schemas.guest import Guest
+from datetime import datetime
+
+class PhotoBase(BaseModel):
+    id: int
+    filename: str
+    s3_key: str
+    upload_date: datetime
+
+    class Config:
+        from_attributes = True
+
+class PhotoAlbumBase(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class InvitationBase(BaseModel):
-    intro_text: str
+    intro_text: Optional[str] = None
     video_url: Optional[str] = None
-    photo_album_url: Optional[str] = None
-    background_image_url: str
-    background_color: str = "#FFFFFF"
-
-    @validator('background_color')
-    def validate_hex_color(cls, v):
-        if not re.match(r'^#(?:[0-9a-fA-F]{3}){1,2}$', v):
-            raise create_validation_error(
-                error_code=ErrorCode.INVALID_CONTENT,
-                message="Cor deve estar no formato hexadecimal (ex: #FF0000)",
-                validation_errors=v
-            )
-        return v
+    photo_album_id: Optional[int] = None
+    cover_photo_id: Optional[int] = None
 
     @validator('video_url')
     def validate_video_url(cls, v):
@@ -41,19 +48,8 @@ class InvitationCreate(InvitationBase):
 class InvitationUpdate(BaseModel):
     intro_text: Optional[str] = None
     video_url: Optional[str] = None
-    photo_album_url: Optional[str] = None
-    background_image_url: Optional[str] = None
-    background_color: Optional[str] = None
-
-    @validator('background_color')
-    def validate_hex_color(cls, v):
-        if v is not None and not re.match(r'^#(?:[0-9a-fA-F]{3}){1,2}$', v):
-            raise create_validation_error(
-                error_code=ErrorCode.INVALID_CONTENT,
-                message="Cor deve estar no formato hexadecimal (ex: #FF0000)",
-                validation_errors=v
-            )
-        return v
+    photo_album_id: Optional[int] = None
+    cover_photo_id: Optional[int] = None
 
     @validator('video_url')
     def validate_video_url(cls, v):

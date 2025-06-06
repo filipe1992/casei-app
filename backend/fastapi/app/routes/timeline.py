@@ -197,7 +197,6 @@ async def create_timeline_item(
     - Pelo menos um dos campos deve estar preenchido: texto, vídeo ou imagem
     - Não pode ter vídeo e imagem simultaneamente
     - URLs de vídeo devem ser do YouTube ou Vimeo
-    - URLs de imagem devem ser http/https
     """
     try:
         timeline = await timeline_crud.get_user_timeline(db=db, user_id=current_user.id)

@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from app.models.invitation import Invitation
 from app.models.user import User
 from app.schemas.invitation import GuestInvitationResponse, InvitationCreate, InvitationUpdate
@@ -13,8 +14,18 @@ import logging
 
 
 async def get_invitation(db: AsyncSession, user_id: int) -> Optional[Invitation]:
-    result = await db.execute(select(Invitation).where(Invitation.user_id == user_id))
-    return result.scalar_one_or_none()
+    """
+    Busca o convite de um usuário com suas relações (álbum de fotos e foto de capa).
+    """
+    result = await db.execute(
+        select(Invitation)
+        .where(Invitation.user_id == user_id)
+        .options(
+            joinedload(Invitation.photo_album),
+            joinedload(Invitation.cover_photo)
+        )
+    )
+    return result.unique().scalar_one_or_none()
 
 async def get_user_invitations(
     db: AsyncSession,
@@ -22,9 +33,16 @@ async def get_user_invitations(
     skip: int = 0,
     limit: int = 100
 ) -> List[Invitation]:
+    """
+    Busca todos os convites de um usuário com suas relações.
+    """
     result = await db.execute(
         select(Invitation)
         .where(Invitation.user_id == user_id)
+        .options(
+            joinedload(Invitation.photo_album),
+            joinedload(Invitation.cover_photo)
+        )
         .offset(skip)
         .limit(limit)
     )
@@ -35,6 +53,9 @@ async def create_invitation(
     invitation_in: InvitationCreate,
     user_id: int
 ) -> Invitation:
+    """
+    Cria um novo convite para o usuário.
+    """
     db_invitation = Invitation(
         **invitation_in.model_dump(),
         user_id=user_id
@@ -42,13 +63,18 @@ async def create_invitation(
     db.add(db_invitation)
     await db.commit()
     await db.refresh(db_invitation)
-    return db_invitation
+    
+    # Recarrega o convite com suas relações
+    return await get_invitation(db=db, user_id=user_id)
 
 async def update_invitation(
     db: AsyncSession,
     invitation: Invitation,
     invitation_in: InvitationUpdate
 ) -> Invitation:
+    """
+    Atualiza um convite existente.
+    """
     update_data = invitation_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(invitation, field, value)
@@ -56,16 +82,19 @@ async def update_invitation(
     db.add(invitation)
     await db.commit()
     await db.refresh(invitation)
-    return invitation
+    
+    # Recarrega o convite com suas relações
+    return await get_invitation(db=db, user_id=invitation.user_id)
 
 async def delete_invitation(
     db: AsyncSession,
-    invitation_id: int,
     user_id: int
 ) -> Optional[Invitation]:
+    """
+    Remove um convite existente.
+    """
     result = await db.execute(
         select(Invitation).where(
-            Invitation.id == invitation_id,
             Invitation.user_id == user_id
         )
     )
@@ -78,10 +107,12 @@ async def delete_invitation(
     return invitation 
 
 async def get_guest_invitation(
-      db: AsyncSession,
-      hash_link: str  
-    )-> Optional[GuestInvitationResponse]:
-    
+    db: AsyncSession,
+    hash_link: str  
+) -> Optional[GuestInvitationResponse]:
+    """
+    Busca o convite de um convidado pelo hash do link.
+    """
     guest = await guest_crud.get_guest_by_hash(db=db, hash_link=hash_link)
     if not guest:
         logging.error(f"Convidado não encontrado: {hash_link}")
@@ -92,7 +123,6 @@ async def get_guest_invitation(
         logging.error(f"Convite não encontrado: {hash_link}")
         raise HTTPException(status_code=404, detail=f"Convite não encontrado: {hash_link}")
     
-    # Retorna o convite com o nome do convidado usando o novo schema
     return GuestInvitationResponse(
         guest=guest,
         invitation=invitation
@@ -102,7 +132,10 @@ async def send_invitation_by_whatsapp(
     db: AsyncSession,
     hash_link: str,
     user: User
-    ):
+) -> None:
+    """
+    Envia o convite por WhatsApp para um convidado específico.
+    """
     whatsapp = get_whatsapp_service()
 
     guest_invitation = await get_guest_invitation(db=db, hash_link=hash_link)
@@ -115,52 +148,47 @@ async def send_invitation_by_whatsapp(
         raise HTTPException(status_code=403, detail=f"Você não tem permissão para enviar convite para este convidado")
     
     guest_name = guest_invitation.guest.name
-    invitation = guest_invitation.invitation.intro_text
+    invitation_text = guest_invitation.invitation.intro_text or "Você está convidado(a) para o nosso casamento!"
     guest_link = f"https://weddingplanner.com.br/guest/{hash_link}"
     guest_phone = guest_invitation.guest.phone.replace("+", "")
     
-    # Enviando uma mensagem simples
     try:
         result = await whatsapp.send_message(
-            phone_number=guest_phone,  # Número sem o '+'
-            message=f"Olá *{guest_name}!*\n\n *{user.full_name}* \n\n {invitation}\n\n Confirme sua presença em: {guest_link} \n\n\n\n\n> TESTANDO!!!!!!"
+            phone_number=guest_phone,
+            message=f"Olá *{guest_name}!*\n\n{invitation_text}\n\nConfira seu convite online e confirme sua presença em: {guest_link}"
         )
         
         await guest_crud.update_guest(
             db=db, 
-            guest= await guest_crud.get_guest_by_hash(db=db, hash_link=hash_link),
+            guest_id=guest_invitation.guest.id,
             guest_in=GuestUpdate(whatsapp_invite_id=result.get("id").get("_serialized"))
         )
     except Exception as e:
         logging.error(f"Erro ao enviar mensagem: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao enviar mensagem: {str(e)}")
-    
 
 async def send_invitation_by_whatsapp_all_guests(
     db: AsyncSession,
     user: User
-    ):
+) -> None:
+    """
+    Envia o convite por WhatsApp para todos os convidados do usuário.
+    """
     whatsapp = get_whatsapp_service()
+    invitation = await get_invitation(db=db, user_id=user.id)
+    
+    if not invitation:
+        logging.error(f"Convite não encontrado para o usuário: {user.id}")
+        raise HTTPException(status_code=404, detail="Convite não encontrado")
 
     guests = await guest_crud.get_guests_by_user(db=db, user_id=user.id)
     logging.info(f"Enviando convite para {len(guests)} convidados")
+    
+    invitation_text = invitation.intro_text or "Você está convidado(a) para o nosso casamento!"
+    
     for guest in guests:
-        guest_phone = guest.phone.replace("+", "")
-        guest_name = guest.name
-        guest_link = f"https://weddingplanner.com.br/guest/{guest.hash_link}"
-             
-        # Enviando uma mensagem simples
         try:
-            result = await whatsapp.send_message(
-                phone_number=guest_phone,  # Número sem o '+'
-                message=f"Olá *{guest_name}!*\n\n *Convite de casamento dos noivos {user.full_name} e {user.full_name}* \n\n Confira seu convite online e corta a nossa história: {guest_link} \n\n\n\n\n> TESTANDO!!!!!!"
-            )
-            
-            await guest_crud.update_guest(
-            db=db, 
-                guest= await guest_crud.get_guest_by_hash(db=db, hash_link=guest.hash_link),
-                guest_in=GuestUpdate(whatsapp_invite_id=result.get("id").get("_serialized"))
-            )
+            await send_invitation_by_whatsapp(db=db, hash_link=guest.hash_link, user=user)
         except Exception as e:
-            logging.error(f"Erro ao enviar mensagem: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Erro ao enviar mensagem: {str(e)}")
+            logging.error(f"Erro ao enviar mensagem para {guest.name}: {str(e)}")
+            continue  # Continue enviando para outros convidados mesmo se houver erro

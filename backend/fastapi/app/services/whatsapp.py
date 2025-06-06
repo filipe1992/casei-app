@@ -11,6 +11,11 @@ class WhatsAppMessageRequest(BaseModel):
     linkPreviewHighQuality: bool = False
     session: str = "default"
 
+class WhatsAppReactionRequest(BaseModel):
+    messageId: str
+    reaction: str
+    session: str = "default"
+
 class WhatsAppService:
     def __init__(self, base_url: str = "http://waha:3000"):
         self.base_url = base_url
@@ -66,6 +71,28 @@ class WhatsAppService:
             raise HTTPException(
                 status_code=500,
                 detail=f"Erro ao enviar mensagem do WhatsApp: {str(e)}"
+            )
+        
+    async def send_reaction(self, message_id: str, reaction: str, session: str = "default") -> None:
+        """
+        Envia uma reação para uma mensagem no WhatsApp.
+        """
+        payload = WhatsAppReactionRequest(
+            messageId=message_id,
+            reaction=reaction,
+            session=session
+        )
+        
+        try:
+            response = await self.client.put(
+                f"{self.base_url}/api/reaction",
+                json=payload.model_dump()
+            )
+            response.raise_for_status()
+        except httpx.HTTPError as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Erro ao enviar reação do WhatsApp: {str(e)}"
             )
 
     async def close(self):

@@ -20,12 +20,12 @@ class S3Service:
             self.s3_client = None
         self.bucket_name = settings.S3_BUCKET_NAME
     
-    def upload_file(self, object_name: str, file: UploadFile):
+    def upload_file(self, object_name: str, file_input: UploadFile):
         """
         Faz o upload de um arquivo para o S3
         """
         try:
-            self.s3_client.upload_fileobj(file.file, self.bucket_name, object_name)
+            self.s3_client.upload_fileobj(file_input.file, self.bucket_name, object_name)
         except ClientError as e:
             logging.error(f"Erro ao fazer upload do arquivo para o S3: {str(e)}")
             return False
@@ -86,6 +86,16 @@ class S3Service:
         unique_id = str(uuid.uuid4())
         extension = filename.split('.')[-1]
         
-        return f"user_{user_id}/{guest_id}_{timestamp}_{unique_id}.{extension}"
+        return f"user_{user_id}/guest_{guest_id}/{timestamp}_{unique_id}.{extension}"
+    
+    @staticmethod
+    def generate_file_key_user(user_id: int, filename: str) -> str:
+        """
+        Gera uma chave única para o arquivo no S3
+        """
+        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
+        unique_id = str(uuid.uuid4())
+        extension = filename.split('.')[-1]
+        return f"user_{user_id}/personal/{timestamp}_{unique_id}.{extension}"
 
 s3_service = S3Service() 
