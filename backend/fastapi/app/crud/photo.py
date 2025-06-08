@@ -3,9 +3,11 @@ from typing import List, Optional
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.models.photo import Photo, PhotoAlbum
 from app.schemas.photo import PhotoCreate, PhotoUpdate, PhotoAlbumCreate, PhotoAlbumUpdate
 from app.services.s3 import s3_service
+from app.crud import guest as guest_crud
 
 # CRUD para Photo
 async def create_photo(db: AsyncSession, photo_in: PhotoCreate) -> Photo:
@@ -85,7 +87,7 @@ async def create_photo_album(db: AsyncSession, album_in: PhotoAlbumCreate) -> Ph
 
 async def get_photo_album(db: AsyncSession, album_id: int) -> Optional[PhotoAlbum]:
     result = await db.execute(select(PhotoAlbum).where(PhotoAlbum.id == album_id))
-    return result.scalar_one_or_none()
+    return result.unique().scalar_one_or_none()
 
 async def get_user_albums(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 100) -> List[PhotoAlbum]:
     result = await db.execute(
@@ -96,12 +98,29 @@ async def get_user_albums(db: AsyncSession, user_id: int, skip: int = 0, limit: 
     )
     return result.scalars().all()
 
-async def get_guest_albums(db: AsyncSession, guest_id: int) -> List[PhotoAlbum]:
+async def get_guest_albums(db: AsyncSession, guest_id: int) -> Optional[PhotoAlbum]:
     result = await db.execute(
         select(PhotoAlbum)
+        .options(selectinload(PhotoAlbum.photos))
+        .options(selectinload(PhotoAlbum.guest))
         .where(PhotoAlbum.guest_id == guest_id)
     )
-    return result.scalars().all()
+    return result.unique().scalar_one_or_none()
+
+async def get_guest_albums_or_create(db: AsyncSession, guest_id: int) -> Optional[PhotoAlbum]:
+    album = await get_guest_albums(db=db, guest_id=guest_id)
+    if not album:
+        guest = await guest_crud.get_guest(db=db, guest_id=guest_id)
+        album = await create_photo_album(
+            db=db, 
+            album_in=PhotoAlbumCreate(
+                name=f"Álbum de fotos do convidado {guest.name}",
+                description=f"Álbum de fotos do convidado {guest.name}",
+                guest_id=guest_id,
+                user_id=guest.user_id
+            )
+        )
+    return album
 
 async def update_photo_album(db: AsyncSession, album_id: int, album_in: PhotoAlbumUpdate) -> Optional[PhotoAlbum]:
     db_album = await get_photo_album(db, album_id)

@@ -42,10 +42,9 @@ async def create_photo(
     )
 
 # upload de foto de um convidado
-@router.post("/guests/{guest_hash_link}/albums/{album_id}/photos/", response_model=PhotoResponse)
+@router.post("/guests/{guest_hash_link}/photos/", response_model=PhotoResponse)
 async def create_guest_photo(
     guest_hash_link: str,
-    album_id: int,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -56,18 +55,18 @@ async def create_guest_photo(
     if not guest:
         raise HTTPException(status_code=404, detail="Convidado não encontrado")
     
-    album = await photo_crud.get_photo_album(db=db, album_id=album_id)
-    if not album or album.user_id != guest.user_id:
-        raise HTTPException(status_code=404, detail="Álbum não encontrado")
+    album = await photo_crud.get_guest_albums_or_create(db=db, guest_id=guest.id)
     
-    contents = await file.read()
+
     photo_in = PhotoCreate(
         filename=file.filename,
         user_id=guest.user_id,
-        file=contents
+        file=file
     )
     
     photo = await photo_crud.create_photo(db=db, photo_in=photo_in)
+
+    await photo_crud.add_photo_to_album(db=db, album_id=album.id, photo_id=photo.id)
     
     return PhotoResponse(
         id=photo.id,
@@ -75,7 +74,7 @@ async def create_guest_photo(
         s3_key=photo.s3_key,
         user_id=photo.user_id,
         upload_date=photo.upload_date,
-        photo_album_id=photo.photo_album_id,
+        photo_album_id=album.id,
         url=s3_service.generate_presigned_url(photo.s3_key)
     )
 

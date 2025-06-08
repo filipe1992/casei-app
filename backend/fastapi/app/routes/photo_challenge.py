@@ -18,6 +18,7 @@ from app.schemas.photo_challenge import (
 from app.models.user import User
 from app.db.session import get_db
 from app.auth.auth import get_current_user
+from app.schemas.photo import PhotoCreate
 
 router = APIRouter()
 
@@ -30,6 +31,9 @@ async def create_challenge(
     """
     Criar um novo desafio fotográfico
     """
+    challenge = await challenge_crud.get_photo_challenge_by_user(db=db, user_id=current_user.id)
+    if challenge:
+        raise HTTPException(status_code=400, detail="Desafio já existe")
     challenge = await challenge_crud.create_photo_challenge(
         db=db,
         challenge_in=challenge_in,
@@ -94,6 +98,8 @@ async def create_task(
     Criar uma nova tarefa para um desafio
     """
     challenge = await challenge_crud.get_photo_challenge_by_user(db=db, user_id=current_user.id)
+    print(f"Challenge: {challenge.__dict__}")
+    print(f"task_in: {task_in.__dict__}")
     if not challenge:
         raise HTTPException(status_code=404, detail="Desafio não encontrado")
     if challenge.user_id != current_user.id:
@@ -104,7 +110,8 @@ async def create_task(
         task_in=task_in,
         user_id=current_user.id
     )
-    return task
+
+    return await challenge_crud.get_challenge_task(db=db, task_id=task.id)
 
 @router.put("/task/{task_id}", response_model=ChallengeTaskResponse)
 async def update_task(
@@ -179,6 +186,17 @@ async def complete_task(
     guest = await guest_crud.get_guest_by_hash(db=db, hash_link=guest_hash)
     if not guest:
         raise HTTPException(status_code=404, detail="Convidado não encontrado")
+    
+    album = await photo_crud.get_guest_albums_or_create(db=db, guest_id=guest.id)
+    if not album:
+        raise HTTPException(status_code=404, detail="Álbum não encontrado")
+    
+    photo = await photo_crud.get_photo(db=db, photo_id=photo_id)
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    if photo.user_id != guest.user_id or photo.photo_album_id != album.id:
+        raise HTTPException(status_code=403, detail="Convidado não tem permissão para completar esta tarefa")
 
     # Verificar se o convidado pertence ao mesmo usuário do desafio
     challenge = await challenge_crud.get_photo_challenge_by_user(db=db, user_id=guest.user_id)
@@ -199,10 +217,13 @@ async def complete_task(
         guest_id=guest.id
     )
     
-    await challenge_crud.complete_challenge_task(db=db, complete_in=complete_in)
+    completed_task = await challenge_crud.complete_challenge_task(db=db, complete_in=complete_in)
+    if not completed_task:
+        raise HTTPException(status_code=400, detail="Não foi possível completar a tarefa")
     
     # Recarregar a tarefa para obter o status atualizado
     updated_task = await challenge_crud.get_challenge_task(db=db, task_id=task_id)
+    updated_task.completed_tasks.append(completed_task)
     return updated_task
 
 @router.post("/guest/{guest_hash}/task/{task_id}/with_photo/complete", response_model=ChallengeTaskResponse)
@@ -224,6 +245,11 @@ async def complete_task(
     guest = await guest_crud.get_guest_by_hash(db=db, hash_link=guest_hash)
     if not guest:
         raise HTTPException(status_code=404, detail="Convidado não encontrado")
+    
+    album = await photo_crud.get_guest_albums_or_create(db=db, guest_id=guest.id)
+    if not album:
+        raise HTTPException(status_code=404, detail="Álbum não encontrado")
+    
 
     # Verificar se o convidado pertence ao mesmo usuário do desafio
     challenge = await challenge_crud.get_photo_challenge_by_user(db=db, user_id=guest.user_id)
@@ -233,12 +259,24 @@ async def complete_task(
             detail="Convidado não tem permissão para completar esta tarefa"
         )
     
-    photo, _ = await photo_crud.create_photo(
+    completed_task = await challenge_crud.get_completed_challenge_task(db=db, task_id=task_id, guest_id=guest.id)
+    if completed_task:
+        raise HTTPException(status_code=400, detail="Tarefa já completada")
+    
+    
+    photo = await photo_crud.create_photo(
         db=db,
-        file=file,
-        user_id=guest.user_id,
-        guest_id=guest.id
+        photo_in=PhotoCreate(
+            user_id=guest.user_id,
+            file=file,
+            filename=file.filename,
+        )
     )
+
+    if not photo:
+        raise HTTPException(status_code=400, detail="Não foi possível criar a foto")
+    
+    await photo_crud.add_photo_to_album(db=db, album_id=album.id, photo_id=photo.id)
     
     completed_task = await challenge_crud.get_completed_challenge_task(db=db, task_id=task_id, guest_id=guest.id)
     if completed_task:
@@ -251,10 +289,13 @@ async def complete_task(
         guest_id=guest.id
     )
     
-    await challenge_crud.complete_challenge_task(db=db, complete_in=complete_in)
+    completed_task = await challenge_crud.complete_challenge_task(db=db, complete_in=complete_in)
+    if not completed_task:
+        raise HTTPException(status_code=400, detail="Não foi possível completar a tarefa")
     
     # Recarregar a tarefa para obter o status atualizado
     updated_task = await challenge_crud.get_challenge_task(db=db, task_id=task_id)
+    updated_task.completed_tasks.append(completed_task)
     return updated_task
 
 @router.put("/guest/{guest_hash}/task/{task_id}/photo_id/{photo_id}/complete", response_model=ChallengeTaskResponse)
@@ -276,6 +317,17 @@ async def update_complete_task(
     guest = await guest_crud.get_guest_by_hash(db=db, hash_link=guest_hash)
     if not guest:
         raise HTTPException(status_code=404, detail="Convidado não encontrado")
+    
+    photo = await photo_crud.get_photo(db=db, photo_id=photo_id)
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    album = await photo_crud.get_guest_albums_or_create(db=db, guest_id=guest.id)
+    if not album:
+        raise HTTPException(status_code=404, detail="Álbum não encontrado")
+    
+    if photo.user_id != guest.user_id or photo.photo_album_id != album.id:
+        raise HTTPException(status_code=403, detail="Convidado não tem permissão para completar esta tarefa")
 
     # Verificar se o convidado pertence ao mesmo usuário do desafio
     challenge = await challenge_crud.get_photo_challenge_by_user(db=db, user_id=guest.user_id)
@@ -306,15 +358,17 @@ async def get_guest_challenge_summary(
     """
     Obter um resumo do desafio com tarefas concluídas e pendentes
     """
+    print(f"Guest hash: {guest_hash}")
     guest = await guest_crud.get_guest_by_hash(db=db, hash_link=guest_hash)
     if not guest:
         raise HTTPException(status_code=404, detail="Convidado não encontrado")
-    
+    print(f"Guest: {guest.__dict__}")
     challenge = await challenge_crud.get_photo_challenge_by_user(db=db, user_id=guest.user_id)
     if not challenge:
         raise HTTPException(status_code=404, detail="Desafio não encontrado")
-    
+    print(f"Challenge: {challenge.__dict__}")
     summary = await challenge_crud.get_challenge_summary_by_guest(db=db, guest_id=guest.id, challenge_id=challenge.id)
+    print(f"Summary: {summary.__dict__}")
     if not summary:
         raise HTTPException(status_code=404, detail="Não foi possível gerar o resumo do desafio")
     

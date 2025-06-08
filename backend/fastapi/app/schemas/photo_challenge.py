@@ -59,8 +59,7 @@ class ChallengeTaskResponse(ChallengeTaskBase):
     id: int
     challenge_id: int
     created_at: datetime
-    is_completed: bool = False
-    completed_by: List[CompletedTaskInfo] = []
+    completed_tasks: List[CompletedTaskInfo] = []
 
     class Config:
         from_attributes = True
@@ -71,6 +70,7 @@ class ChallengeTaskResponseGuest(ChallengeTaskBase):
     challenge_id: int
     created_at: datetime
     is_completed: bool = False
+    completed_tasks: List[CompletedTaskInfo] = []
 
     class Config:
         from_attributes = True

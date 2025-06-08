@@ -1,11 +1,11 @@
 from typing import List, Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import exists, select, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from collections import defaultdict
 
 from app.models.photo_challenge import PhotoChallenge, ChallengeTask, CompletedChallengeTask
-from app.schemas.photo_challenge import ChallengeSummaryGuestResponse, ChallengeTaskResponse, ChallengeTaskResponseGuest, PhotoChallengeCreate, ChallengeTaskCreate, CompletedChallengeTaskCreate, PhotoChallengeUpdate
+from app.schemas.photo_challenge import ChallengeSummaryGuestResponse, ChallengeTaskResponse, ChallengeTaskResponseGuest, CompletedTaskInfo, GuestInfo, PhotoChallengeCreate, ChallengeTaskCreate, CompletedChallengeTaskCreate, PhotoChallengeUpdate
 from app.errors.base import create_not_found_error, ErrorCode
 
 # PhotoChallenge CRUD
@@ -84,9 +84,8 @@ async def create_challenge_task(
     challenge = await get_photo_challenge_by_user(db=db, user_id=user_id)
     if not challenge:
         raise create_not_found_error(
-            error_code=ErrorCode.NOT_FOUND,
-            message="Desafio não encontrado",
-            validation_errors=[]
+            resource_type="challenge",
+            resource_id=user_id
         )
     
     db_task = ChallengeTask(
@@ -204,8 +203,7 @@ async def get_challenge_summary_by_guest(
     stmt = (
         select(ChallengeTask)
         .options(
-            joinedload(ChallengeTask.completed_tasks)
-            .joinedload(CompletedChallengeTask.guest)
+            selectinload(ChallengeTask.completed_tasks),
         )
         .where(ChallengeTask.challenge_id == challenge_id)
         .order_by(ChallengeTask.created_at)
@@ -222,6 +220,17 @@ async def get_challenge_summary_by_guest(
     }
 
     for task in result:
+        completed_tasks = []
+        for completed_task in task.completed_tasks:
+            completed_tasks.append(CompletedTaskInfo(
+                completed_at=completed_task.completed_at,
+                guest=GuestInfo(
+                    id=completed_task.guest.id,
+                    name=completed_task.guest.name
+                ),
+                photo_id=completed_task.photo_id
+            ))
+
         result_list.append(ChallengeTaskResponseGuest(
             id=task.id,
             title=task.title,
@@ -229,6 +238,7 @@ async def get_challenge_summary_by_guest(
             challenge_id=task.challenge_id,
             created_at=task.created_at,
             is_completed=task_map[task.id],
+            completed_tasks=completed_tasks
         ))
     return ChallengeSummaryGuestResponse(
         tasks=result_list
@@ -285,7 +295,7 @@ async def get_challenge_summary(
             "challenge_id": task.challenge_id,
             "created_at": task.created_at,
             "is_completed": bool(task.completed_tasks),
-            "completed_by": completed_info
+            "completed_tasks": completed_info
         }
         tasks.append(task_dict)
     
