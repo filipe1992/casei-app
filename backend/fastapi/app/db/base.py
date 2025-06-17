@@ -11,6 +11,7 @@ from app.models.photo import Photo  # noqa
 from app.models.photo_challenge import PhotoChallenge, ChallengeTask, CompletedChallengeTask  # noqa
 from app.models.schedule import Schedule, ScheduleItem  # noqa
 from app.models.configuration import Configuration  # noqa
+from app.models.menu import Menu, MenuItem  # noqa
 
 # Todos os modelos devem ser importados aqui para que o Alembic possa detectá-los
 # O comentário noqa é usado para evitar warnings do linter sobre importações não utilizadas 

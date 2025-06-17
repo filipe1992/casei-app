@@ -2,13 +2,13 @@ import logging
 from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 import hashlib
 import uuid
 import time
 
 from app.models.guest import Guest
-from app.schemas.guest import GuestCreate, GuestUpdate
+from app.schemas.guest import GuestCreate, GuestStatistics, GuestUpdate
 from app.services.whatsapp import get_whatsapp_service
 from app.models.user import User
 
@@ -31,8 +31,29 @@ async def get_guests_by_user(
         .where(Guest.user_id == user_id)
         .offset(skip)
         .limit(limit)
+        .order_by(func.lower(Guest.name).asc())
     )
     return result.scalars().all()
+
+
+async def get_statistics_about_guests(db: AsyncSession, user_id: int) -> GuestStatistics:
+    result = await db.execute(
+        select(Guest)
+        .where(Guest.user_id == user_id)
+    )
+    guests = result.scalars().all()
+
+    total_guests = len(guests)
+    total_confirmed_guests = sum(1 for guest in guests if guest.confirmed)
+    total_unconfirmed_guests = total_guests - total_confirmed_guests
+    percentage_confirmed_guests = total_confirmed_guests / total_guests * 100
+
+    return {
+        "total_guests": int(total_guests),
+        "total_confirmed_guests": int(total_confirmed_guests),
+        "total_unconfirmed_guests": int(total_unconfirmed_guests),
+        "percentage_confirmed_guests": float(percentage_confirmed_guests),
+    }
 
 async def get_unconfirmed_guests_by_user(
     db: AsyncSession,

@@ -32,6 +32,36 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
+def update_access_token(token: str, expires_delta: Optional[timedelta] = None) -> str:
+    try:
+        # Decodifica o token atual
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        
+        # Remove o campo de expiração antigo
+        if "exp" in payload:
+            del payload["exp"]
+            
+        # Atualiza a data de expiração
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(
+                minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+            )
+            
+        # Adiciona nova data de expiração
+        payload.update({"exp": expire})
+        
+        # Gera novo token
+        new_token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        return new_token
+        
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido"
+        )
+
 async def get_current_user(
     db: AsyncSession = Depends(get_db),
     token: str = Depends(oauth2_scheme)

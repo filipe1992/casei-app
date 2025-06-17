@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from app.db.base_class import Base
 
 class Configuration(Base):
@@ -19,6 +21,8 @@ class Configuration(Base):
     spouse_name_1 = Column(String, nullable=True)
     spouse_name_2 = Column(String, nullable=True)
     template_id = Column(String, nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
 
     # Relacionamento com o usuário (one-to-one)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)

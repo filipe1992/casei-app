@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from app.db.base_class import Base
 
 class Guest(Base):
@@ -11,6 +13,8 @@ class Guest(Base):
     confirmed = Column(Boolean, default=False)
     hash_link = Column(String, unique=True, index=True, nullable=False)
     whatsapp_invite_id = Column(String, nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com o usuário (dono do evento)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

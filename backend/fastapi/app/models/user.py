@@ -1,5 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from app.db.base_class import Base
 
 # from app.models.base import Base
@@ -13,6 +15,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
 
     # Relacionamento com os convidados
     guests = relationship("Guest", back_populates="user", cascade="all, delete-orphan")
@@ -40,5 +44,8 @@ class User(Base):
 
     # Relacionamento com a configuração (one-to-one)
     configuration = relationship("Configuration", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+    # Relacionamentos
+    menus = relationship("Menu", back_populates="user", cascade="all, delete-orphan")
 
 

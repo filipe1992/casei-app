@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from app.auth.auth import (
     create_access_token,
     get_current_user,
-    get_current_active_superuser
+    get_current_active_superuser,
+    update_access_token
 )
 from app.core.config import settings
 from app.crud import user as user_crud
@@ -99,3 +100,15 @@ async def deactivate_user_route(
             detail="Usuário não encontrado ou é um superusuário que não pode ser desativado"
         )
     return user 
+
+@router.post("/refresh-token", response_model=dict[str, str])
+async def refresh_token(
+    new_token: str = Depends(update_access_token)
+) -> Any:
+    """
+    Refresh token.
+    """
+    return {
+        "access_token": new_token,
+        "token_type": "bearer",
+    }

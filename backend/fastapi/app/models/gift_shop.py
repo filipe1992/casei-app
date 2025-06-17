@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, Integer, String, Text, Float, ForeignKey, Boolean, Numeric, LargeBinary
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from app.db.base_class import Base
 
 
@@ -9,6 +11,8 @@ class GiftShop(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relationship with user (one-to-one)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
@@ -25,6 +29,8 @@ class GiftProduct(Base):
     description = Column(Text)
     price = Column(Numeric(10, 2), nullable=False)  # Allows values up to 99999999.99
     image = Column(String, nullable=True)  # Image URL (legacy)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
 
     # Relationship with photo
     photo_id = Column(Integer, ForeignKey("photos.id"), nullable=True)
@@ -42,9 +48,10 @@ class GiftShopPurchase(Base):
     __tablename__ = "gift_shop_purchases"
 
     id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     paid = Column(Boolean, default=False)
-    paid_at = Column(DateTime, nullable=True)
+    paid_at = Column(TIMESTAMP(timezone=True), nullable=True)
 
     # Relationship with product
     product_id = Column(Integer, ForeignKey("gift_products.id"), nullable=False)

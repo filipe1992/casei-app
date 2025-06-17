@@ -23,3 +23,10 @@ class Guest(GuestBase):
 
     class Config:
         from_attributes = True 
+
+class GuestStatistics(BaseModel):
+    total_guests: int
+    total_confirmed_guests: int
+    total_unconfirmed_guests: int
+    percentage_confirmed_guests: float
+    

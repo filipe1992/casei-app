@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from datetime import datetime, timezone
 from app.db.base_class import Base
 
@@ -9,7 +11,9 @@ class Photo(Base):
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String, nullable=False)
     s3_key = Column(String, nullable=False)
-    upload_date = Column(DateTime(timezone=False), default=datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
+    upload_date = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com o usuário (dono das fotos)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -35,7 +39,8 @@ class PhotoAlbum(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=False), default=datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com o usuário (dono do álbum)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

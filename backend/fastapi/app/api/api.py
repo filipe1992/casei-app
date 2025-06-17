@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.routes import auth, users, guests, invitations, timeline, gift_shop, dashboard, photos, photo_challenge, schedule, configuration
+from app.routes import auth, users, guests, invitations, timeline, gift_shop, dashboard, photos, photo_challenge, schedule, configuration, menu
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -14,3 +14,4 @@ api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboar
 api_router.include_router(photos.router, prefix="/photos", tags=["photos"])
 api_router.include_router(photo_challenge.router, prefix="/photo-challenge", tags=["photo-challenge"])
 api_router.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
+api_router.include_router(menu.router, prefix="/menu", tags=["menu"])

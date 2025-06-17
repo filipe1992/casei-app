@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.crud import guest as guest_crud
-from app.schemas.guest import Guest, GuestCreate, GuestUpdate
+from app.schemas.guest import Guest, GuestCreate, GuestStatistics, GuestUpdate
 from app.models.user import User
 from app.db.session import get_db
 from app.auth.auth import get_current_user
@@ -125,3 +125,14 @@ async def send_reaction_all_guests_not_confirmed(
     """
     await guest_crud.send_reaction_to_all_guests_not_confirmed(db=db, user=current_user)
     return {"message": "Reação enviada para todos os convidados não confirmados"}
+
+@router.get("/statistics/me", response_model=GuestStatistics)
+async def get_statistics(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Obter estatísticas dos convidados.
+    """
+    logging.info(f"Total de convidados: {current_user.id}")
+    return await guest_crud.get_statistics_about_guests(db=db, user_id=current_user.id)

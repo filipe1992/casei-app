@@ -40,6 +40,14 @@ services:
     volumes:
       - waha_data:/app/store
 
+  # frontend:
+  #   build: 
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: weddingplanner_frontend
+  #   ports:
+  #     - "3000:3000"
+
 volumes:
   postgres_data:
   waha_data: 

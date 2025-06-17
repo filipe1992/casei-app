@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from app.db.base_class import Base
 
 class Invitation(Base):
@@ -8,6 +10,8 @@ class Invitation(Base):
     id = Column(Integer, primary_key=True, index=True)
     intro_text = Column(Text, nullable=True)
     video_url = Column(String, nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com o usuário (one-to-one)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)

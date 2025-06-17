@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import func
 from app.db.base_class import Base
 
 class PhotoChallenge(Base):
@@ -8,7 +9,8 @@ class PhotoChallenge(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com o usuário (criador do desafio)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
@@ -23,7 +25,8 @@ class ChallengeTask(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com o desafio
     challenge_id = Column(Integer, ForeignKey("photo_challenges.id"), nullable=False)
@@ -36,7 +39,9 @@ class CompletedChallengeTask(Base):
     __tablename__ = "completed_challenge_tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    completed_at = Column(DateTime, default=datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
+    completed_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     
     # Relacionamento com a task do challenge
     task_id = Column(Integer, ForeignKey("challenge_tasks.id"), nullable=False)
