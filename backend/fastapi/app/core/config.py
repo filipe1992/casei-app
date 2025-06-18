@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"  # development, staging, production
     VERSION: str
     API_V1_STR: str = "/api/v1"
+    FRONTEND_URL: str = "http://localhost:3001"
     
     # Configurações de Segurança
     SECRET_KEY: str
@@ -34,6 +35,15 @@ class Settings(BaseSettings):
     AWS_REGION: str = "us-east-1"
     S3_BUCKET_NAME: str = ""
 
+    # Email settings
+    MAIL_USERNAME: str = "filipe.coelho.dc@gmail.com"
+    MAIL_PASSWORD: str = "oack iuhx tnxf ptdc"
+    MAIL_FROM: EmailStr = "filipe.coelho.dc@gmail.com"
+    MAIL_PORT: int = 587
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: str | List[str]) -> List[str] | str:
         if isinstance(v, str):
@@ -54,11 +64,12 @@ class Settings(BaseSettings):
 
     @property
     def get_database_url(self) -> str:
+        print(f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}")
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
 
     class Config:
         case_sensitive = True
-        env_file = ".env"
+        env_file = "/home/filipe_damasceno/projetos/PESSOAL/casei-app/.env.example"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

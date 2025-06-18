@@ -32,7 +32,7 @@ export const useGuests = () => {
       setGuests(response);
       const statisticsResponse = await guestApi.getStatistics();
       setStatistics(statisticsResponse);
-      console.log("statistics", statisticsResponse);
+      
     } catch (err) {
       console.error('Erro ao buscar convidados:', err);
       setError('Falha ao carregar convidados. Tente novamente.');

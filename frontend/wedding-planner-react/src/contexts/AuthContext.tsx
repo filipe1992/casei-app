@@ -3,13 +3,25 @@ import { setAuthToken } from '../lib/api/apiClient.ts';
 import { API_CONFIG } from '../configs/api.ts';
 import { authApi, LoginCredentials, User } from '../lib/api/auth.ts';
 
-interface AuthContextData {
+interface AuthState {
   isAuthenticated: boolean;
+  loading: boolean;
   token: string | null;
   user: User | null;
+}
+
+interface AuthContextData extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
+  updateUser: (user: User) => void;
 }
+
+const initialAuthState: AuthState = {
+  isAuthenticated: false,
+  loading: true,
+  token: null,
+  user: null,
+};
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
@@ -18,9 +30,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [authState, setAuthState] = useState<AuthState>(initialAuthState);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -29,41 +39,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setAuthToken(storedToken);
         try {
           const userData = await authApi.getMe();
-          setUser(userData);
-          setToken(storedToken);
-          setIsAuthenticated(true);
+          setAuthState({
+            token: storedToken,
+            user: userData,
+            isAuthenticated: true,
+            loading: false,
+          });
         } catch (error) {
           localStorage.removeItem('token');
           setAuthToken(null);
+          setAuthState({ ...initialAuthState, loading: false });
         }
+      } else {
+        setAuthState({ ...initialAuthState, loading: false });
       }
     };
     loadUser();
   }, []);
 
   useEffect(() => {
-    if (token) {
+    if (authState.token) {
       const intervalId = setInterval(async () => {
         try {
-          const response = await authApi.refreshToken(token);
+          if (!authState.token) return;
+          const response = await authApi.refreshToken(authState.token);
           const newToken = response.access_token;
-          setToken(newToken);
           setAuthToken(newToken);
+          localStorage.setItem('token', newToken);
+          setAuthState(prev => ({ ...prev, token: newToken }));
         } catch (error) {
           console.error('Erro ao atualizar token:', error);
-          setToken(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem('token');
-          setAuthToken(null);
+          logout();
         }
       }, API_CONFIG.tokenRefreshInterval);
 
       return () => clearInterval(intervalId);
-    } else {
-      localStorage.removeItem('token');
-      setAuthToken(null);
     }
-  }, [token]);
+  }, [authState.token]);
 
   const login = async (credentials: LoginCredentials) => {
     const response = await authApi.login(credentials);
@@ -73,27 +85,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('token', newToken);
 
     const userData = await authApi.getMe();
-    setUser(userData);
-    setToken(newToken);
-    setIsAuthenticated(true);
+    setAuthState({
+      token: newToken,
+      user: userData,
+      isAuthenticated: true,
+      loading: false,
+    });
+  };
+
+  const updateUser = (newUser: User) => {
+    setAuthState(prev => ({ ...prev, user: newUser }));
   };
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    setIsAuthenticated(false);
     localStorage.removeItem('token');
     setAuthToken(null);
+    setAuthState({ ...initialAuthState, loading: false });
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated,
-        token,
-        user,
+        ...authState,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

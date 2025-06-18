@@ -5,6 +5,10 @@ import Login from './pages/Login.tsx';
 import Settings from './pages/Settings.tsx';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute.tsx';
 import Register from './pages/Register.tsx';
+import ForgotPassword from './pages/ForgotPassword.tsx';
+import ResetPassword from './pages/ResetPassword.tsx';
+import ConfirmEmail from './pages/ConfirmEmail.tsx';
+import ProfilePage from './pages/Profile.tsx';
 import { CssBaseline } from '@mui/material';
 import Layout from './components/Layout/Layout.tsx';
 import Guests from './pages/Guests.tsx';
@@ -17,6 +21,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/confirm-email/:token" element={<ConfirmEmail />} />
           <Route
             path="/settings"
             element={
@@ -25,6 +32,14 @@ function App() {
                   <Settings />
                 </Layout>
               </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <Layout>
+                <ProfilePage />
+              </Layout>
             }
           />
           <Route

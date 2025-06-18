@@ -44,6 +44,13 @@ async def get_statistics_about_guests(db: AsyncSession, user_id: int) -> GuestSt
     guests = result.scalars().all()
 
     total_guests = len(guests)
+    if total_guests == 0:
+        return {
+            "total_guests": 0,
+            "total_confirmed_guests": 0,
+            "total_unconfirmed_guests": 0,
+            "percentage_confirmed_guests": 0,
+        }
     total_confirmed_guests = sum(1 for guest in guests if guest.confirmed)
     total_unconfirmed_guests = total_guests - total_confirmed_guests
     percentage_confirmed_guests = total_confirmed_guests / total_guests * 100

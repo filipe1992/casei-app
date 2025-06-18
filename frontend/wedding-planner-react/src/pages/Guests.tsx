@@ -131,7 +131,7 @@ const Guests: React.FC = () => {
       </Typography>
 
       <Grid container spacing={4} sx={{ mb: 6 }}>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid>
           <Card sx={{
             height: '100%',
             backgroundColor: '#f5f5f5',
@@ -162,7 +162,7 @@ const Guests: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid >
           <Card sx={{
             height: '100%',
             backgroundColor: '#f5f5f5',
@@ -204,7 +204,7 @@ const Guests: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid >
           <Card sx={{
             height: '100%',
             backgroundColor: '#e8f5e9',
@@ -233,7 +233,7 @@ const Guests: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid >
           <Card sx={{
             height: '100%',
             backgroundColor: '#ffcdd2',

@@ -3,7 +3,11 @@ import { AuthContext } from '../contexts/AuthContext.tsx';
 import { authApi, LoginCredentials, RegisterData } from '../lib/api/auth.ts';
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
 
 export const useAuthApi = () => {

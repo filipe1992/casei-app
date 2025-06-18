@@ -5,8 +5,13 @@ export const API_CONFIG = {
       login: '/auth/login/access-token',
       refresh: '/auth/login/refresh-token',
       register: '/auth/register',
+      passwordRecovery: '/auth/password-recovery/:email',
+      resetPassword: '/auth/reset-password',
+      confirmEmail: '/auth/confirm-email/:token',
+      changePassword: '/auth/reset-password-logged-user/'
     },
     users: {
+      register: '/users/',
       me: '/users/me',
     },
     guests: {

@@ -24,8 +24,6 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   LockReset as LockResetIcon,
-  CardMembership as CardMembershipIcon,
-  AccountCircle as AccountCircleIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.ts';
@@ -74,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           component="img"
           src="/logo.svg"
           alt="Logo"
-          sx={{ height: 40 }}
+          sx={{ height: 33, width: 33 }}
         />
         <Typography variant="h6" sx={{ ml: 1, fontWeight: 'bold' }}>
           Casei

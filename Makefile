@@ -42,3 +42,6 @@ db-upgrade:
 
 db-downgrade:
 	cd backend/fastapi && POSTGRES_SERVER=localhost alembic downgrade -1 
+
+up-no-frontend:
+	docker-compose up -d postgres backend waha

@@ -7,6 +7,7 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
     is_superuser: bool = False
     full_name: Optional[str] = None
+    email_confirmed: bool = False
 
 
 class UserCreate(UserBase):
@@ -27,6 +28,15 @@ class User(UserInDBBase):
 
 class UserInDB(UserInDBBase):
     hashed_password: str
+
+# Schema para a redefinição de senha
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str
+
+class ResetPasswordLoggedUser(BaseModel):
+    current_password: str
+    new_password: str
 
 # Schema que inclui dados do usuário e sua configuração
 class UserWithConfiguration(User):

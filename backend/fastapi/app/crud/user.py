@@ -1,7 +1,9 @@
 from typing import List, Optional
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
-from app.auth.auth import get_password_hash, verify_password
+from app.auth.auth import get_password_hash, verify_password, create_access_token
+from app.services.email import send_verification_email
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -36,6 +38,12 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     await db.refresh(db_user)
     return db_user
 
+async def send_new_account_email(email_to: str, name: str):
+    # O token de confirmação pode ter uma vida útil curta
+    expires_delta = timedelta(hours=1)
+    token = create_access_token(data={"sub": email_to}, expires_delta=expires_delta)
+    await send_verification_email(email_to=email_to, token=token, name=name)
+
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
     user = await get_user_by_email(db=db, email=email)
     if not user:
@@ -57,6 +65,12 @@ async def deactivate_user(db: AsyncSession, username: str) -> Optional[User]:
     await db.commit()
     db.refresh(user)
     return user 
+
+async def confirm_email(db: AsyncSession, user: User) -> User:
+    user.email_confirmed = True
+    await db.commit()
+    await db.refresh(user)
+    return user
 
 async def update_user_by_id(db: AsyncSession, user_id: int, user_in: UserUpdate) -> Optional[User]:
     user = await get_user_by_id(db, user_id)
@@ -84,3 +98,4 @@ async def delete_user_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
     await db.delete(user)
     await db.commit()
     return user
+
